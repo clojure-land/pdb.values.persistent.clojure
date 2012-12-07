@@ -11,29 +11,40 @@
  *******************************************************************************/
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 import org.eclipse.imp.pdb.facts.IValue;
+import org.eclipse.imp.pdb.facts.io.StandardTextWriter;
 import org.eclipse.imp.pdb.facts.type.Type;
-import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
-import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-public class Value implements IValue {
+public abstract class Value implements IValue {
 
+	protected final Type type;
+	
+	protected Value(Type type) {
+		this.type = type;
+	}
+	
 	@Override
 	public Type getType() {
-		// TODO Auto-generated method stub
-		return null;
+		return type;
 	}
 
 	@Override
-	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
-		// TODO Auto-generated method stub
-		return null;
+	public boolean isEqual(IValue that) {
+		return this.equals(that);
 	}
 
-	@Override
-	public boolean isEqual(IValue other) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
+    @Override
+    public final String toString() {
+    	try {
+    		StringWriter stream = new StringWriter();
+    		new StandardTextWriter().write(this, stream);
+			return stream.toString();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} 
+    }
+	
 }

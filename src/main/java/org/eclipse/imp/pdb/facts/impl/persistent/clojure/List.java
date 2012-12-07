@@ -17,45 +17,47 @@ import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.type.Type;
+import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-public class List implements IList {
+import clojure.lang.IPersistentList;
+import clojure.lang.PersistentList;
 
-	@Override
-	public Iterator<IValue> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+public class List extends Value implements IList {
+
+	private final Type et;
+	private final IPersistentList xs;
+	
+	protected List(Type et) {
+		this(et, PersistentList.EMPTY);
+	}
+	
+	protected List(Type et, IPersistentList xs) {
+		super(TypeFactory.getInstance().listType(et));
+		this.et = et;
+		this.xs = xs;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Type getType() {
-		// TODO Auto-generated method stub
-		return null;
+	public Iterator<IValue> iterator() {
+		return ((PersistentList) xs).iterator();
 	}
 
 	@Override
 	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isEqual(IValue other) {
-		// TODO Auto-generated method stub
-		return false;
+		return v.visitList(this);
 	}
 
 	@Override
 	public Type getElementType() {
-		// TODO Auto-generated method stub
-		return null;
+		return et;
 	}
 
 	@Override
 	public int length() {
-		// TODO Auto-generated method stub
-		return 0;
+		return xs.count();
 	}
 
 	@Override
@@ -71,9 +73,8 @@ public class List implements IList {
 	}
 
 	@Override
-	public IList insert(IValue e) {
-		// TODO Auto-generated method stub
-		return null;
+	public IList insert(IValue x) {
+		return new List(et, (IPersistentList) xs.cons(x));
 	}
 
 	@Override
@@ -103,8 +104,7 @@ public class List implements IList {
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		return length() != 0;
 	}
 
 	@Override
