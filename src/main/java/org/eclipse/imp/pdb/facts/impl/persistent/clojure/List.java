@@ -22,7 +22,6 @@ import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-import clojure.*;
 import clojure.lang.IFn;
 import clojure.lang.ISeq;
 import clojure.lang.IPersistentVector;
@@ -34,8 +33,9 @@ import clojure.lang.Symbol;
 import clojure.lang.Var;
 
 import static clojure.lang.RT.CLOJURE_NS;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureCoreHelper.*;
 
-public class List extends Value implements IList {
+class List extends Value implements IList {
 
 	/**
 	 * Use the Clojure compiler to create functions references code that
@@ -60,20 +60,6 @@ public class List extends Value implements IList {
 	static IFn clojure$core_reference(String functionName) {
 		return Var.intern(CLOJURE_NS, Symbol.intern(null, functionName));
 	}
-	
-	private final static IFn core$reverse = new core$reverse();
-	private final static IFn core$conj = new core$conj();
-	private final static IFn core$cons = new core$cons();
-	private final static IFn core$concat = new core$concat();
-	private final static IFn core$nil_QMARK_ = new core$nil_QMARK_();
-	private final static IFn core$some = new core$some();
-	private final static IFn core$nth = new core$nth();
-	private final static IFn core$nthnext = new core$nthnext();
-	private final static IFn core$split_at = new core$split_at();
-	private final static IFn core$next = new core$next();
-	private final static IFn core$rest = new core$rest();
-	private final static IFn core$drop = new core$drop();
-	private final static IFn core$take = new core$take();
 	
 	private final static IFn pdblist$firstIndexOf;
 	
@@ -126,12 +112,12 @@ public class List extends Value implements IList {
 
 	@Override
 	public IList append(IValue x) {
-		return new List(this.lub(x), (ISeq) core$reverse.invoke(core$conj.invoke(core$reverse.invoke(xs), x)));
+		return new List(this.lub(x), appendAtSeq(xs, x));
 	}
 
 	@Override
 	public IList insert(IValue x) {
-		return new List(et, (ISeq) xs.cons(x));
+		return new List(this.lub(x), (ISeq) xs.cons(x));
 	}
 
 	@Override
@@ -148,12 +134,9 @@ public class List extends Value implements IList {
 		 * index check doesn't exploit the full potential of lazy sequences. 
 		 */
 		if (i < 0 || i >= length()) throw new IndexOutOfBoundsException();
-		IPersistentVector leftRight = (IPersistentVector) core$split_at.invoke(i, xs);
-		ISeq newLeft = (ISeq) leftRight.nth(0);	
-		ISeq newRight = (ISeq) core$cons.invoke(x, core$next.invoke(leftRight.nth(1)));
-		return new List(this.lub(x), ((ISeq) core$concat.invoke(newLeft, newRight)));
+		return new List(this.lub(x), replaceInSeq(xs, i, x));
 	}
-
+	
 	@Override
 	public IValue get(int i) throws IndexOutOfBoundsException {
 		return (IValue) core$nth.invoke(xs, i);
@@ -180,14 +163,13 @@ public class List extends Value implements IList {
 
 	@Override
 	public IList delete(IValue x) {
-	    Object result = pdblist$firstIndexOf.invoke(x, xs);	    
-	    return (result == null) ? this : delete(((Long)result).intValue());
+		return new List(et, deleteFromSeq(xs, x));
 	}
 
 	@Override
 	public IList delete(int i) {
-		if (i < 0 || i >= length()) throw new IndexOutOfBoundsException();
-		return new List(et, (ISeq) core$concat.invoke(core$take.invoke(i, xs), core$rest.invoke(core$nthnext.invoke(xs, i))));
+		if (i < 0 || i >= xs.count()) throw new IndexOutOfBoundsException();
+		return new List(et, deleteFromSeq(xs, i));
 	}
 
 	@Override
@@ -205,4 +187,32 @@ public class List extends Value implements IList {
 		return xs.hashCode();
 	}
 
+
+	/*
+	 * Static Functions that operate on Clojure sequences.
+	 * Are used herein and in ListWriter classes.
+	 * 
+	 * TODO: separate from this class.
+	 */
+	
+	protected static ISeq appendAtSeq(ISeq xs, IValue x) {
+		return (ISeq) core$reverse.invoke(core$conj.invoke(core$reverse.invoke(xs), x));		
+	}
+	
+	protected static ISeq deleteFromSeq(ISeq xs, IValue x) {
+	    Object result = pdblist$firstIndexOf.invoke(x, xs);	    
+	    return (result == null) ? xs : deleteFromSeq(xs, ((Long)result).intValue());		
+	}	
+	
+	protected static ISeq deleteFromSeq(ISeq xs, int i) {
+		return (ISeq) core$concat.invoke(core$take.invoke(i, xs), core$rest.invoke(core$nthnext.invoke(xs, i)));
+	}
+	
+	protected static ISeq replaceInSeq(ISeq xs, int i, IValue x) {
+		IPersistentVector leftRight = (IPersistentVector) core$split_at.invoke(i, xs);
+		ISeq newLeft = (ISeq) leftRight.nth(0);	
+		ISeq newRight = (ISeq) core$cons.invoke(x, core$next.invoke(leftRight.nth(1)));
+		return (ISeq) core$concat.invoke(newLeft, newRight);
+	}
+	
 }

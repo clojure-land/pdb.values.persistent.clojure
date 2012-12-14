@@ -127,15 +127,13 @@ public class ValueFactory extends BaseValueFactory implements IValueFactory {
 	}
 
 	@Override
-	public IListWriter listWriter(Type eltType) {
-		// TODO Auto-generated method stub
-		return null;
+	public IListWriter listWriter(Type et) {
+		return new ListWriter(et);
 	}
 
 	@Override
 	public IListWriter listWriter() {
-		// TODO Auto-generated method stub
-		return null;
+		return new ListWriterWithTypeInference();
 	}
 
 	@Override
