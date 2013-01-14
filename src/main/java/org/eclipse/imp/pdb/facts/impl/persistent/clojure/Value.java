@@ -18,8 +18,10 @@ import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.io.StandardTextWriter;
 import org.eclipse.imp.pdb.facts.type.Type;
 
-public abstract class Value implements IValue {
+abstract class Value implements IValue {
 
+	protected static ValueFactory factory = new ValueFactory(); 
+	
 	protected final Type type;
 	
 	protected Value(Type type) {

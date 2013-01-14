@@ -15,125 +15,220 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.eclipse.imp.pdb.facts.IMap;
+import org.eclipse.imp.pdb.facts.IMapWriter;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.Type;
+import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-public class Map implements IMap {
+import clojure.lang.APersistentMap;
+import clojure.lang.IPersistentMap;
+import clojure.lang.PersistentHashMap;
 
-	@Override
-	public Type getType() {
-		// TODO Auto-generated method stub
-		return null;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
+
+public class Map extends Value implements IMap {
+
+	protected final Type kt, vt;
+	protected final IPersistentMap xs;		
+	
+	protected Map(Type kt, Type vt, IPersistentMap xs) {
+		super(TypeFactory.getInstance().mapType(kt, vt));
+		this.kt = kt;
+		this.vt = vt;
+		this.xs = xs;
 	}
-
+	
+	protected Map(Type kt, Type vt) {
+		this(kt, vt, PersistentHashMap.EMPTY);
+	}	
+	
 	@Override
 	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isEqual(IValue other) {
-		// TODO Auto-generated method stub
-		return false;
+		return v.visitMap(this);
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		return size() == 0;
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return xs.count();
 	}
 
 	@Override
 	public IMap put(IValue key, IValue value) {
-		// TODO Auto-generated method stub
-		return null;
+		return new Map(kt.lub(key.getType()), vt.lub(value.getType()), (IPersistentMap) xs.assoc(key, value));
 	}
 
 	@Override
 	public IValue get(IValue key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (IValue) xs.valAt(key, null);
 	}
 
 	@Override
 	public boolean containsKey(IValue key) {
-		// TODO Auto-generated method stub
-		return false;
+		return xs.containsKey(key);
 	}
 
 	@Override
 	public boolean containsValue(IValue value) {
-		// TODO Auto-generated method stub
+		Iterator<IValue> it = valueIterator();
+		
+		while (it.hasNext()) {
+			if (it.next().equals(value)) return true;
+		}
+		
 		return false;
 	}
 
 	@Override
 	public Type getKeyType() {
-		// TODO Auto-generated method stub
-		return null;
+		return kt;
 	}
 
 	@Override
 	public Type getValueType() {
-		// TODO Auto-generated method stub
-		return null;
+		return vt;
 	}
 
 	@Override
 	public IMap join(IMap other) {
-		// TODO Auto-generated method stub
-		return null;
+		Map that = (Map) other;
+		return new Map(kt.lub(that.kt), vt.lub(that.vt), core$merge(this.xs, that.xs));
 	}
 
 	@Override
 	public IMap remove(IMap other) {
-		// TODO Auto-generated method stub
-		return null;
+		IPersistentMap result = xs;
+		
+		for (IValue key: other) {
+			result = result.without(key);
+		}
+
+		return new Map(kt, vt, result);
 	}
 
 	@Override
 	public IMap compose(IMap other) {
-		// TODO Auto-generated method stub
-		return null;
+		Map that = (Map) other;
+		IMapWriter writer = factory.mapWriter(this.kt, that.vt);
+		
+		for (IValue key : this) {
+			if (that.containsKey(key)) writer.put(key, that.get(key));
+		}
+		
+		return writer.done();
 	}
 
 	@Override
 	public IMap common(IMap other) {
-		// TODO Auto-generated method stub
-		return null;
+		Map that = (Map) other;
+		IMapWriter writer = factory.mapWriter(this.kt, that.vt);
+		
+		for (IValue key : this) {
+			if (that.containsKey(key) && this.get(key).equals(that.get(key))) {
+				writer.put(key, this.get(key));
+			}
+		}
+		
+		return writer.done();
 	}
 
 	@Override
 	public boolean isSubMap(IMap other) {
-		// TODO Auto-generated method stub
-		return false;
+		Map that = (Map) other;
+		
+		for (IValue key: this) {
+			if (that.containsKey(key) == false) return false;
+			if (that.get(key).isEqual(this.get(key)) == false) return false;
+		}
+		
+		return true;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Iterator<IValue> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return ((APersistentMap) xs).keySet().iterator();
+//		ISeq keys = core$keys(xs);
+//		if (keys == null) 
+//			return ((Iterable<IValue>) PersistentList.EMPTY).iterator();
+//		else
+//			return ((Iterable<IValue>) keys).iterator();			
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Iterator<IValue> valueIterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return ((APersistentMap) xs).values().iterator();
+//		ISeq vals = core$vals(xs);
+//		if (vals == null) 
+//			return ((Iterable<IValue>) PersistentList.EMPTY).iterator();
+//		else
+//			return ((Iterable<IValue>) vals).iterator();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Iterator<Entry<IValue, IValue>> entryIterator() {
+		return ((APersistentMap) xs).entrySet().iterator();
+//		return new Iterator<java.util.Map.Entry<IValue,IValue>>() {
+//			
+//			@SuppressWarnings("unchecked")
+//			final Iterator<MapEntry> innerIterator = xs.iterator(); 
+//			
+//			@Override
+//			public void remove() {
+//				innerIterator.remove();
+//			}
+//			
+//			@Override
+//			public Entry<IValue, IValue> next() {
+//				return new Entry<IValue, IValue>() {
+//
+//					final MapEntry innerEntry = innerIterator.next();
+//					
+//					@Override
+//					public IValue getKey() {
+//						return (IValue) innerEntry.getKey();
+//					}
+//
+//					@Override
+//					public IValue getValue() {
+//						return (IValue) innerEntry.getValue();
+//					}
+//
+//					@Override
+//					public IValue setValue(IValue value) {
+//						throw new UnsupportedOperationException();
+//					}
+//				};
+//			}
+//			
+//			@Override
+//			public boolean hasNext() {
+//				return innerIterator.hasNext();
+//			}
+//		};
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Map) {
+			Map that = (Map) other;
+			return this.xs.equiv(that.xs);
+		} else {
+			return false;
+		}
 	}
 
 	@Override
-	public Iterator<Entry<IValue, IValue>> entryIterator() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public int hashCode() {
+		return xs.hashCode();
+	}		
 
 }

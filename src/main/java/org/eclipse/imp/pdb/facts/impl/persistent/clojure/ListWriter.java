@@ -1,6 +1,6 @@
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
-import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureCoreHelper.*;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
 
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IListWriter;
@@ -25,6 +25,11 @@ class ListWriter implements IListWriter {
 	}	
 	
 	@Override
+	public int size() {
+		return xs.count();
+	}
+	
+	@Override
 	public void insertAll(Iterable<? extends IValue> collection)
 			throws FactTypeUseException {
 		insertSeq(RT.seq(collection));
@@ -32,11 +37,13 @@ class ListWriter implements IListWriter {
 
 	@Override
 	public void insert(IValue... values) throws FactTypeUseException {
-		insertSeq(RT.seq(values));
+		for (int i = values.length-1; i >= 0; i--) {
+			xs = xs.cons(values[i]);
+		}
 	}
 
 	private void insertSeq(ISeq ys) {
-		xs = (ISeq) core$concat.invoke(ys, xs);
+		xs = core$concat(ys, xs);
 	}
 
 	@Override
@@ -48,17 +55,17 @@ class ListWriter implements IListWriter {
 	@Override
 	public void insert(IValue[] values, int i, int n)
 			throws FactTypeUseException, IndexOutOfBoundsException {
-		insertAt(i, (ISeq) core$take.invoke(n, RT.seq(values)));
+		insertAt(i, core$take(n, RT.seq(values)));
 	}
 
 	@Override
 	public void insertAt(int i, IValue[] values, int j, int n)
 			throws FactTypeUseException, IndexOutOfBoundsException {
-		insertAt(i, (ISeq) core$take.invoke(n, core$drop.invoke(j, RT.seq(values))));
+		insertAt(i, core$take(n, core$drop(j, RT.seq(values))));
 	}
 	
 	private void insertAt(int i, ISeq ys) {
-		xs = (ISeq) core$concat.invoke(core$concat.invoke(core$take.invoke(i, xs), ys), core$drop.invoke(i, xs));
+		xs = core$concat(core$concat(core$take(i, xs), ys), core$drop(i, xs));
 	}	
 
 	// TODO / NOTE: inconsistency in naming; equivalent to List.put(i, x)
@@ -70,13 +77,13 @@ class ListWriter implements IListWriter {
 
 	@Override
 	public void append(IValue... values) throws FactTypeUseException {
-		xs = (ISeq) core$concat.invoke(xs, RT.seq(values));
+		xs = core$concat(xs, RT.seq(values));
 	}
 
 	@Override
 	public void appendAll(Iterable<? extends IValue> collection)
 			throws FactTypeUseException {
-		xs = (ISeq) core$concat.invoke(xs, RT.seq(collection));
+		xs = core$concat(xs, RT.seq(collection));
 	}
 
 	@Override
@@ -91,7 +98,7 @@ class ListWriter implements IListWriter {
 
 	@Override
 	public IList done() {
-		return new List(et, xs);
+		return ListOrRel.apply(et, xs);
 	}
 
 }
@@ -102,21 +109,9 @@ class ListWriterWithTypeInference extends ListWriter {
 		super(TypeFactory.getInstance().voidType());
 	}
 
-	// TODO: Move to a (more) proper place.
-	private Type lub(ISeq xs) {
-		Type result = et;
-
-		while (xs.more() != null) {
-			result = result.lub(((IValue) xs.first()).getType());
-			xs = xs.next();
-		}
-
-		return result;
-	}
-
 	@Override
 	public IList done() {
-		return new List(lub(xs), xs);
+		return ListOrRel.apply(List.lub(xs), xs);
 	}
 	  
 }

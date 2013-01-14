@@ -18,118 +18,156 @@ import org.eclipse.imp.pdb.facts.INode;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.type.Type;
+import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-public class Node implements INode {
+import clojure.lang.IPersistentMap;
+import clojure.lang.IPersistentVector;
+import clojure.lang.PersistentHashMap;
+import clojure.lang.PersistentVector;
 
-	@Override
-	public Type getType() {
-		// TODO Auto-generated method stub
-		return null;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
+
+public class Node extends Value implements INode {
+
+	protected final String name;
+	protected final IPersistentVector children;
+	protected final IPersistentMap annotations;
+	protected int hash = 0;
+	
+	protected Node(Type type, String name, IPersistentVector children, IPersistentMap annotations) {
+		super(type);
+		this.name = name;
+		this.children = children;
+		this.annotations = annotations;
 	}
 
+	protected Node(String name) {
+		this(TypeFactory.getInstance().nodeType(), name, PersistentVector.EMPTY, PersistentHashMap.EMPTY);
+	}
+	
+	protected Node(String name, IValue... children) {
+		this(TypeFactory.getInstance().nodeType(), name, PersistentVector.create((Object[])children), PersistentHashMap.EMPTY);
+	}	
+
+	protected Node(String name, java.util.Map<String, IValue> newAnnotationsMap, IValue... children) {
+		this(TypeFactory.getInstance().nodeType(), name, PersistentVector.create((Object[])children), PersistentHashMap.create(newAnnotationsMap));
+	}
+	
 	@Override
 	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isEqual(IValue other) {
-		// TODO Auto-generated method stub
-		return false;
+		return v.visitNode(this);
 	}
 
 	@Override
 	public IValue get(int i) throws IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
-		return null;
+		return (IValue) children.nth(i);
 	}
 
 	@Override
 	public INode set(int i, IValue newChild) throws IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
-		return null;
+		return new Node(type, name,  children.assocN(i, newChild), annotations);
 	}
 
 	@Override
 	public int arity() {
-		// TODO Auto-generated method stub
-		return 0;
+		return children.length();
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return name;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Iterable<IValue> getChildren() {
-		// TODO Auto-generated method stub
-		return null;
+		return (Iterable) children;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Iterator<IValue> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return ((Iterable) children).iterator();
 	}
 
 	@Override
 	public IValue getAnnotation(String label) throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
+		return (IValue) annotations.valAt(label, null);
 	}
-
+		
 	@Override
 	public INode setAnnotation(String label, IValue newValue)
 			throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
+		return new Node(type, name, children, annotations.assoc(label, newValue));
 	}
 
 	@Override
 	public boolean hasAnnotation(String label) throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return false;
+		return annotations.containsKey(label);
 	}
 
 	@Override
 	public boolean hasAnnotations() {
-		// TODO Auto-generated method stub
-		return false;
+		return !(annotations.count() == 0); 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, IValue> getAnnotations() {
-		// TODO Auto-generated method stub
-		return null;
+		return (Map<String, IValue>) annotations;
 	}
 
 	@Override
-	public INode setAnnotations(Map<String, IValue> annotations) {
-		// TODO Auto-generated method stub
-		return null;
+	public INode setAnnotations(Map<String, IValue> newAnnotations) {
+		return new Node(type, name, children, PersistentHashMap.create(newAnnotations));
 	}
 
 	@Override
-	public INode joinAnnotations(Map<String, IValue> annotations) {
-		// TODO Auto-generated method stub
-		return null;
+	public INode joinAnnotations(Map<String, IValue> newAnnotationsMap) {
+		IPersistentMap newAnnotations = core$merge(annotations, PersistentHashMap.create(newAnnotationsMap));
+		return new Node(type, name, children, newAnnotations);
 	}
 
 	@Override
 	public INode removeAnnotation(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return new Node(type, name, children, annotations.without(key));
 	}
 
 	@Override
 	public INode removeAnnotations() {
-		// TODO Auto-generated method stub
-		return null;
+		return new Node(type, name, children, (IPersistentMap) annotations.empty());
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Node) {
+			Node that = (Node) other;
+			return this.name.equals(that.name) 
+					&& this.children.equiv(that.children);
+//					&& this.annotations.equiv(that.annotations);
+		} else {
+			return false;
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	protected int computeHashCode() {
+		int hash = name != null ? name.hashCode() : 0;
+
+		for (Object child : (Iterable) children) {
+			hash = (hash << 1) ^ (hash >> 1) ^ child.hashCode();
+		}
+		return hash;
+	}
+
+	@Override
+	public int hashCode() {
+		if (hash == 0) {
+			hash = computeHashCode();
+		}
+		return hash;
+	}
+	
 }

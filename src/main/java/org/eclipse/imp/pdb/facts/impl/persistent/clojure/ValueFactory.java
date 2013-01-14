@@ -15,6 +15,8 @@ import java.util.Map;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IList;
+import org.eclipse.imp.pdb.facts.IListRelation;
+import org.eclipse.imp.pdb.facts.IListRelationWriter;
 import org.eclipse.imp.pdb.facts.IListWriter;
 import org.eclipse.imp.pdb.facts.IMap;
 import org.eclipse.imp.pdb.facts.IMapWriter;
@@ -30,158 +32,188 @@ import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.impl.BaseValueFactory;
 import org.eclipse.imp.pdb.facts.type.Type;
+import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
 public class ValueFactory extends BaseValueFactory implements IValueFactory {
 
 	@Override
-	public IString string(int[] chars) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+	public IConstructor constructor(Type constructorType) {
+		return new Constructor(constructorType);
 	}
 
 	@Override
-	public IString string(int ch) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+	public IConstructor constructor(Type constructorType, IValue... children)
+			throws FactTypeUseException {
+		return new Constructor(constructorType, children);
+	}
+	
+	@Override
+	public IConstructor constructor(Type constructorType,
+			Map<String, IValue> annotations, IValue... children)
+			throws FactTypeUseException {
+		return new Constructor(constructorType, annotations, children);	
 	}
 
 	@Override
-	public ITuple tuple() {
-		// TODO Auto-generated method stub
-		return null;
+	public IList list(IValue... values) {
+		IListWriter writer = listWriter();
+		writer.insert(values);
+		return writer.done();
 	}
 
 	@Override
-	public ITuple tuple(IValue... args) {
-		// TODO Auto-generated method stub
-		return null;
+	public IList list(Type et) {
+		return listWriter(et).done();
+	}
+		
+	@Override
+	public IListRelation listRelation(IValue... values) {
+		return (IListRelation) list(values);
+	}
+
+	@Override
+	public IListRelation listRelation(Type tupleType) {
+		return listRelationWriter(tupleType).done();
+	}
+
+	@Override
+	public IListRelationWriter listRelationWriter() {
+//		return new ListRelationWriterWithTypeInference();
+		return new VectorRelationWriterWithTypeInference();
+	}
+
+	@Override
+	public IListRelationWriter listRelationWriter(Type et) {
+//		return new ListRelationWriter(et);
+		return new VectorRelationWriter(et);	
+	}
+
+	@Override
+	public IListWriter listWriter() {
+//		return new ListWriterWithTypeInference();
+//		return new VectorWriterWithTypeInference();
+		return new FastListWriter();
+	}
+
+	@Override
+	public IListWriter listWriter(Type et) {
+//		return new ListWriter(et);
+//		return new VectorWriter(et);
+		return new FastListWriter(et);		
+	}
+
+	@Override
+	public IMap map(Type mapType) {
+		return map(mapType.getKeyType(), mapType.getValueType());
+	}
+
+	@Override
+	public IMap map(Type kt, Type vt) {
+		return mapWriter(TypeFactory.getInstance().voidType(), TypeFactory.getInstance().voidType()).done();
+	}
+
+	@Override
+	public IMapWriter mapWriter() {
+		return new MapWriterWithTypeInference();
+	}
+
+	@Override
+	public IMapWriter mapWriter(Type mapType) {
+		return mapWriter(mapType.getKeyType(), mapType.getValueType());
+	}
+
+	@Override
+	public IMapWriter mapWriter(Type kt, Type vt) {
+		return new MapWriter(kt, vt);
 	}
 
 	@Override
 	public INode node(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return new Node(name);
 	}
 
 	@Override
 	public INode node(String name, IValue... children) {
-		// TODO Auto-generated method stub
-		return null;
+		return new Node(name, children);
 	}
 
 	@Override
 	public INode node(String name, Map<String, IValue> annotations,
 			IValue... children) throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
+		return new Node(name, annotations, children);
 	}
 
 	@Override
-	public IConstructor constructor(Type constructor) {
-		// TODO Auto-generated method stub
-		return null;
+	public IRelation relation(IValue... values) {
+		return new Relation(values);
 	}
 
 	@Override
-	public IConstructor constructor(Type constructor, IValue... children)
-			throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IConstructor constructor(Type constructor,
-			Map<String, IValue> annotations, IValue... children)
-			throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ISet set(Type eltType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ISetWriter setWriter(Type eltType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ISetWriter setWriter() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ISet set(IValue... elems) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IList list(Type et) {
-		return new List(et);
-	}
-
-	@Override
-	public IListWriter listWriter(Type et) {
-		return new ListWriter(et);
-	}
-
-	@Override
-	public IListWriter listWriter() {
-		return new ListWriterWithTypeInference();
-	}
-
-	@Override
-	public IList list(IValue... elems) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IRelation relation(Type tupleType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IRelationWriter relationWriter(Type type) {
-		// TODO Auto-generated method stub
-		return null;
+	public IRelation relation(Type et) {
+//		return new Relation(et);
+		return relationWriter(TypeFactory.getInstance().voidType()).done();
 	}
 
 	@Override
 	public IRelationWriter relationWriter() {
-		// TODO Auto-generated method stub
-		return null;
+		return new RelationWriterWithTypeInference();
 	}
 
 	@Override
-	public IRelation relation(IValue... elems) {
-		// TODO Auto-generated method stub
-		return null;
+	public IRelationWriter relationWriter(Type et) {
+		return new RelationWriter(et);
 	}
 
 	@Override
-	public IMap map(Type key, Type value) {
-		// TODO Auto-generated method stub
-		return null;
+	public ISet set(IValue... values) {
+		Type et = TypeInferenceHelper.lub(values, TypeFactory.getInstance().voidType());
+		return et.isTupleType() ? new Relation(values) : new Set(values);
 	}
 
 	@Override
-	public IMapWriter mapWriter(Type key, Type value) {
-		// TODO Auto-generated method stub
-		return null;
+	public ISet set(Type et) {
+		return setWriter(TypeFactory.getInstance().voidType()).done();
 	}
 
 	@Override
-	public IMapWriter mapWriter() {
-		// TODO Auto-generated method stub
-		return null;
+	public ISetWriter setWriter() {
+		return new SetWriterWithTypeInference();
+	}
+
+	@Override
+	public ISetWriter setWriter(Type et) {
+		return et.isTupleType() ? new RelationWriter(et) : new SetWriter(et);
+	}
+
+	@Override
+	public IString string(int cp) throws IllegalArgumentException {
+		StringBuilder builder = new StringBuilder(1);
+		builder.appendCodePoint(cp);
+		return string(builder.toString());
+	}
+
+	@Override
+	public IString string(int[] codePoints) throws IllegalArgumentException {
+		StringBuilder builder = new StringBuilder(codePoints.length);
+		for (int cp : codePoints) {
+			builder.appendCodePoint(cp);
+		}
+		return string(builder.toString());
+	}
+
+	@Override
+	public ITuple tuple() {
+		return new Tuple();
+	}
+
+	@Override
+	public ITuple tuple(IValue... values) {
+		return new Tuple(values);
+	}
+
+	@Override
+	public ITuple tuple(Type type, IValue... values) {
+		return new Tuple(type, values);
 	}
 
 }

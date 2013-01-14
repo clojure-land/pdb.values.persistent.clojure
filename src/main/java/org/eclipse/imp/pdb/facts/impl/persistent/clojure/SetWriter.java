@@ -4,38 +4,64 @@ import org.eclipse.imp.pdb.facts.ISet;
 import org.eclipse.imp.pdb.facts.ISetWriter;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
+import org.eclipse.imp.pdb.facts.type.Type;
+import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-public class SetWriter implements ISetWriter {
+import clojure.lang.IPersistentSet;
+import clojure.lang.PersistentHashSet;
 
+class SetWriter implements ISetWriter {
+
+	protected final Type et;
+	protected IPersistentSet xs;
+	
+	protected SetWriter(Type et){
+		super();
+		this.et = et;
+		this.xs = PersistentHashSet.EMPTY;
+	}
+	
 	@Override
-	public void insert(IValue... v) throws FactTypeUseException {
-		// TODO Auto-generated method stub
-
+	public void insert(IValue... values) throws FactTypeUseException {
+		for (IValue x : values) {
+			xs = (IPersistentSet) xs.cons(x);
+		}
 	}
 
 	@Override
-	public void insertAll(Iterable<? extends IValue> collection)
+	public void insertAll(Iterable<? extends IValue> values)
 			throws FactTypeUseException {
-		// TODO Auto-generated method stub
-
+		for (IValue x : values) {
+			xs = (IPersistentSet) xs.cons(x);
+		}
 	}
 
 	@Override
-	public void delete(IValue v) {
-		// TODO Auto-generated method stub
-
+	public void delete(IValue x) {
+		xs = xs.disjoin(x);
 	}
 
 	@Override
 	public ISet done() {
-		// TODO Auto-generated method stub
-		return null;
+		return SetOrRel.apply(List.lub(xs.seq()), xs);
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return xs.count();
 	}
 
+}
+
+class SetWriterWithTypeInference extends SetWriter {
+
+	protected SetWriterWithTypeInference() {
+		super(TypeFactory.getInstance().voidType());
+	}
+
+	@Override
+	public ISet done() {
+		return SetOrRel.apply(List.lub(xs.seq()), xs);
+	}
+	  
 }

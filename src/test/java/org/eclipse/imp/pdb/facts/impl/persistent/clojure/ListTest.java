@@ -13,56 +13,44 @@ package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-
+import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IValue;
-import org.eclipse.imp.pdb.facts.impl.fast.IntegerValue;
+import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.junit.Test;
 
-import clojure.lang.RT;
-
 public class ListTest {
 
-	IValue i1 = new IntegerValue(1);
-	IValue i2 = new IntegerValue(2);	
-	IValue i3 = new IntegerValue(3);
-	IValue i4 = new IntegerValue(4);	
+	IValueFactory vf = new ValueFactory();
 	
-	List empty = new List(TypeFactory.getInstance().integerType());
-
-	List one = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i1)));
-
-	List two = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i2)));	
+	IValue i1 = vf.integer(1);
+	IValue i2 = vf.integer(2);	
+	IValue i3 = vf.integer(3);
+	IValue i4 = vf.integer(4);	
 	
-	List oneTwo = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i1, i2)));
+	IList empty = vf.list(TypeFactory.getInstance().integerType());
 
-	List oneOne = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i1, i1)));
+	IList one = vf.list(i1);
+
+	IList two = vf.list(i2);
 	
-	List twoOne = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i2, i1)));	
+	IList oneTwo = vf.list(i1, i2);
 
-	List twoTwo = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i2, i2)));		
+	IList oneOne = vf.list(i1, i1);
 	
-	List oneTwoTwoOne = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i1, i2, i2, i1)));
+	IList twoOne = vf.list(i2, i1);
 
-	List oneTwoOneTwo = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i1, i2, i1, i2)));	
-
-	List oneOneTwo = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i1, i1, i2)));		
-
-	List oneTwoOne = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i1, i2, i1)));			
+	IList twoTwo = vf.list(i2, i2);		
 	
-	List twoTwoOne = new List(TypeFactory.getInstance().integerType(),
-			RT.seq(Arrays.asList(i2, i2, i1)));	
+	IList oneTwoTwoOne = vf.list(i1, i2, i2, i1);
+
+	IList oneTwoOneTwo = vf.list(i1, i2, i1, i2);	
+
+	IList oneOneTwo = vf.list(i1, i1, i2);		
+
+	IList oneTwoOne = vf.list(i1, i2, i1);			
+	
+	IList twoTwoOne = vf.list(i2, i2, i1);	
 	
 	
 	@Test

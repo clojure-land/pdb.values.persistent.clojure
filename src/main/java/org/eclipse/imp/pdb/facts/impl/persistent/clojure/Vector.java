@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
-import java.io.StringReader;
 import java.util.Iterator;
 
 import org.eclipse.imp.pdb.facts.IList;
@@ -26,58 +25,35 @@ import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-import clojure.lang.IFn;
-import clojure.lang.IPersistentCollection;
 import clojure.lang.ISeq;
 import clojure.lang.IPersistentVector;
-import clojure.lang.PersistentHashSet;
+import clojure.lang.ITransientVector;
 import clojure.lang.PersistentList;
+import clojure.lang.PersistentVector;
 import clojure.lang.RT;
-import clojure.lang.Compiler;
-import clojure.lang.Symbol;
-import clojure.lang.Var;
 
-import static clojure.lang.RT.CLOJURE_NS;
-import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
-
-class List extends Value implements IList {
-
-	/**
-	 * Use the Clojure compiler to create functions references code that
-	 * is difficult to express purely in Java. 
-	 */
-	static {
-		/**
-		 * E.g. (first (keep-indexed #(if (= 15 %2) %1) [0 0 0 15 15])) returns 3.
-		 */
-	    String str = "(ns pdb-list) (defn firstIndexOf [x coll] (first (keep-indexed #(if (= x %2) %1) coll)))";
-	    Compiler.load(new StringReader(str));
-
-	    pdblist$firstIndexOf = RT.var("pdb-list", "firstIndexOf");		
-	}
-	
-	/**
-	 * Creates a reference to functions that are contained in "clojure.core".
-	 * 
-	 * @param functionName name of the function present in "clojure.core"
-	 * @return reference to the function
-	 */
-	static IFn clojure$core_reference(String functionName) {
-		return Var.intern(CLOJURE_NS, Symbol.intern(null, functionName));
-	}
-	
-	private final static IFn pdblist$firstIndexOf;
+class Vector extends Value implements IList {
 	
 	protected final Type et;
-	protected final ISeq xs;
+	protected final IPersistentVector xs;
 	
-	protected List(Type et) {
-		this(et, PersistentList.EMPTY);
+	protected Vector(Type et) {
+		this(et, PersistentVector.EMPTY);
 	}
 	
-	protected List(IValue... values) {
-		this(TypeInferenceHelper.lubFromVoid(values), seq(values));
+	protected Vector(IValue... values) {
+		this(TypeInferenceHelper.lubFromVoid(values), PersistentVector.create((Object[])values));
 	}
+
+	protected Vector(Type et, IPersistentVector xs) {
+		this(TypeFactory.getInstance().listType(et), et, xs);
+	}
+	
+	protected Vector(Type t, Type et, IPersistentVector xs) {
+		super(t);
+		this.et = et;
+		this.xs = xs;
+	}	
 	
 	static protected ISeq seq(IValue... values) {
 		ISeq result = PersistentList.EMPTY;
@@ -87,19 +63,7 @@ class List extends Value implements IList {
 		}
 		
 		return result;
-	}		
-	
-	protected List(Type et, ISeq xs) {
-		this(TypeFactory.getInstance().listType(et), et, xs);
 	}
-	
-	protected List(Type t, Type et, ISeq xs) {
-		super(t);
-		this.et = et;
-		this.xs = xs;
-		
-		if (t == null || et == null || xs == null) throw new NullPointerException();
-	}	
 	
 	private Type lub(IValue x) {
 		return et.lub(x.getType());
@@ -107,7 +71,7 @@ class List extends Value implements IList {
 
 	private Type lub(IList xs) {
 		return et.lub(xs.getElementType());
-	}
+	}	
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -132,23 +96,42 @@ class List extends Value implements IList {
 
 	@Override
 	public <IListOrRel extends IList> IListOrRel reverse() {
-		return ListOrRel.apply(et, core$reverse(xs));
+		return VectorOrRel.apply(et, PersistentVector.create(xs.rseq()));
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel append(IValue x) {
-		return ListOrRel.apply(this.lub(x), appendAtSeq(xs, x));
+	public <IListOrRel extends IList> IListOrRel append(IValue newItem) {
+		ITransientVector result = PersistentVector.EMPTY.asTransient();
+		for(Object item : (Iterable) xs)
+			result = (ITransientVector) result.conj(item);
+		result = (ITransientVector) result.conj(newItem);
+		
+		return VectorOrRel.apply(this.lub(newItem), (IPersistentVector) result.persistent());
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel insert(IValue x) {
-		return ListOrRel.apply(this.lub(x), (ISeq) xs.cons(x));
+	public <IListOrRel extends IList> IListOrRel insert(IValue newItem) {
+		ITransientVector result = PersistentVector.EMPTY.asTransient();
+		result = (ITransientVector) result.conj(newItem);
+		for(Object item : (Iterable) xs)
+			result = (ITransientVector) result.conj(item);
+		
+		return VectorOrRel.apply(this.lub(newItem), (IPersistentVector) result.persistent());
 	}
 
 	@Override
 	public <IListOrRel extends IList> IListOrRel concat(IList other) {
-		List that = (List) other;
-		return ListOrRel.apply(this.lub(that), core$concat(this.xs, that.xs));
+		Vector that = (Vector) other;
+		
+		ITransientVector result = PersistentVector.EMPTY.asTransient();
+		
+		for(Object item : (Iterable) this.xs)
+			result = (ITransientVector) result.conj(item);
+
+		for(Object item : (Iterable) that.xs)
+			result = (ITransientVector) result.conj(item);
+		
+		return VectorOrRel.apply(this.lub(that), (IPersistentVector) result.persistent());
 	}
 
 	@Override
@@ -159,23 +142,18 @@ class List extends Value implements IList {
 		 * index check doesn't exploit the full potential of lazy sequences. 
 		 */
 		if (i < 0 || i >= length()) throw new IndexOutOfBoundsException();
-		return ListOrRel.apply(this.lub(x), replaceInSeq(xs, i, x));
+		return VectorOrRel.apply(this.lub(x), xs.assocN(i, x));
 	}
 	
 	@Override
-	public IValue get(int i) throws IndexOutOfBoundsException {
-		if (i < 0 || i >= length()) throw new IndexOutOfBoundsException();
-//		return (IValue) core$nth.invoke(xs, i);
-
-		ISeq rest = xs;
-		for (; i > 0; rest = rest.next(), i--);		
-		return (IValue) rest.first();
+	public IValue get(int i) throws IndexOutOfBoundsException {	
+		return (IValue) xs.nth(i);
 	}
 
 	@Override
 	public <IListOrRel extends IList> IListOrRel sublist(int i, int n) {
 		if (i < 0 || n < 0 || i + n > length()) throw new IndexOutOfBoundsException();
-		return ListOrRel.apply(et, core$take(n, core$drop(i, xs)));
+		return VectorOrRel.apply(et, RT.subvec(xs, i, i+n));
 	}
 
 	@Override
@@ -183,29 +161,52 @@ class List extends Value implements IList {
 		return length() == 0;
 	}
 
+	@SuppressWarnings({ "rawtypes" })
 	@Override
 	public boolean contains(IValue x) {
-		/**
-		 * @see http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/some
-		 */
-		return !(null == core$some(PersistentHashSet.create(x), xs));
+		return ((java.util.Collection) xs).contains(x);
 	}
 
 	@Override
 	public <IListOrRel extends IList> IListOrRel delete(IValue x) {
-		return ListOrRel.apply(et, deleteFromSeq(xs, x));
+		ITransientVector result = PersistentVector.EMPTY.asTransient();
+		
+		boolean skipped = false;
+		for(Object item : (Iterable) xs) {
+			if (!skipped && item.equals(x)) {
+				skipped = true;
+			} else {
+				result = (ITransientVector) result.conj(item);
+			}
+		}
+				
+		return VectorOrRel.apply(et, (IPersistentVector) result.persistent());
 	}
 
 	@Override
 	public <IListOrRel extends IList> IListOrRel delete(int i) {
 		if (i < 0 || i >= xs.count()) throw new IndexOutOfBoundsException();
-		return ListOrRel.apply(et, deleteFromSeq(xs, i));
+		ITransientVector result = PersistentVector.EMPTY.asTransient();
+		
+		boolean skipped = false;
+		int idx = 0;
+		for (Iterator it = ((Iterable) xs).iterator(); it.hasNext(); idx++) {
+			Object item = it.next();
+			
+			if (!skipped && i == idx) {
+				skipped = true;
+			} else {
+				result = (ITransientVector) result.conj(item);
+			}
+		}		
+		
+		return VectorOrRel.apply(et, (IPersistentVector) result.persistent());
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof List) {
-			List that = (List) other;
+		if (other instanceof Vector) {
+			Vector that = (Vector) other;
 			return this.xs.equiv(that.xs);
 		} else {
 			return false;
@@ -216,51 +217,7 @@ class List extends Value implements IList {
 	public int hashCode() {
 		return xs.hashCode();
 	}
-
-
-	/*
-	 * Static Functions that operate on Clojure sequences.
-	 * Are used herein and in ListWriter classes.
-	 * 
-	 * TODO: separate from this class.
-	 */
-
-	protected static Type lub(ISeq xs) {
-		Type base = TypeFactory.getInstance().voidType();
-		return xs == null ? base : lub(xs, base);
-	}
 	
-	private static Type lub(ISeq xs, Type base) {
-		Type result = base;
-		
-		while (xs != null && xs.first() != null) {
-			result = result.lub(((IValue) xs.first()).getType());
-			xs = xs.next();
-		}
-
-		return result;
-	}		
-	
-	protected static ISeq appendAtSeq(ISeq xs, IValue x) {
-		return core$reverse(core$conj(core$reverse(xs), x));		
-	}
-	
-	protected static ISeq deleteFromSeq(ISeq xs, IValue x) {
-	    Object result = pdblist$firstIndexOf.invoke(x, xs);	    
-	    return (result == null) ? xs : deleteFromSeq(xs, ((Long)result).intValue());		
-	}	
-	
-	protected static ISeq deleteFromSeq(ISeq xs, int i) {
-		return core$concat(core$take(i, xs), core$rest(core$nthnext(xs, i)));
-	}
-	
-	protected static ISeq replaceInSeq(ISeq xs, int i, IValue x) {
-		IPersistentVector leftRight = core$splitAt(i, xs);
-		ISeq newLeft = (ISeq) leftRight.nth(0);	
-		ISeq newRight = (ISeq) core$cons.invoke(x, core$next((IPersistentCollection) leftRight.nth(1)));
-		return core$concat(newLeft, newRight);
-	}
-
 	@Override
 	public IListRelation product(IList other) {
 		// NOTE: copied from fast list

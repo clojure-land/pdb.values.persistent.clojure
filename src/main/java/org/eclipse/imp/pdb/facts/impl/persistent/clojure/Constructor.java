@@ -11,7 +11,8 @@
  *******************************************************************************/
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
-import java.util.Iterator;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$merge;
+
 import java.util.Map;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
@@ -22,153 +23,134 @@ import org.eclipse.imp.pdb.facts.type.TypeStore;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-public class Constructor implements IConstructor {
+import clojure.lang.IPersistentMap;
+import clojure.lang.IPersistentVector;
+import clojure.lang.PersistentHashMap;
+import clojure.lang.PersistentVector;
 
-	@Override
-	public IValue get(int i) throws IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+public class Constructor extends Node implements IConstructor {
 
-	@Override
-	public int arity() {
-		// TODO Auto-generated method stub
-		return 0;
+	protected int hash = 0;
+	
+	protected Constructor(Type constructorType, IPersistentVector children, IPersistentMap annotations) {
+		super(constructorType, constructorType.getName(), children, annotations);
 	}
+	
+	protected Constructor(Type constructorType) {
+		this(constructorType, PersistentVector.EMPTY, PersistentHashMap.EMPTY);
+	}
+	
+	protected Constructor(Type constructorType, IValue... children) {
+		this(constructorType, PersistentVector.create((Object[])children), PersistentHashMap.EMPTY);
+	}	
 
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Iterable<IValue> getChildren() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Iterator<IValue> iterator() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IValue getAnnotation(String label) throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean hasAnnotation(String label) throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean hasAnnotations() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public Map<String, IValue> getAnnotations() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	protected Constructor(Type constructorType, java.util.Map<String, IValue> newAnnotationsMap, IValue... children) {
+		this(constructorType, PersistentVector.create((Object[])children), PersistentHashMap.create(newAnnotationsMap));
+	}	
 
 	@Override
 	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isEqual(IValue other) {
-		// TODO Auto-generated method stub
-		return false;
+		return v.visitConstructor(this);
 	}
 
 	@Override
 	public Type getType() {
-		// TODO Auto-generated method stub
-		return null;
+		return type.getAbstractDataType();
 	}
 
 	@Override
 	public Type getConstructorType() {
-		// TODO Auto-generated method stub
-		return null;
+		return type;
 	}
 
 	@Override
 	public IValue get(String label) {
-		// TODO Auto-generated method stub
-		return null;
+		return get(getConstructorType().getFieldIndex(label));
 	}
 
 	@Override
 	public IConstructor set(String label, IValue newChild)
 			throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
+		return set (getConstructorType().getFieldIndex(label), newChild);
 	}
 
 	@Override
 	public boolean has(String label) {
-		// TODO Auto-generated method stub
-		return false;
+		return getConstructorType().hasField(label);
 	}
 
 	@Override
-	public IConstructor set(int index, IValue newChild)
+	public IConstructor set(int i, IValue newChild)
 			throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
+		return new Constructor(type, children.assocN(i, newChild), annotations);	
 	}
 
 	@Override
 	public Type getChildrenTypes() {
-		// TODO Auto-generated method stub
-		return null;
+		return getConstructorType().getFieldTypes();
 	}
 
 	@Override
 	public boolean declaresAnnotation(TypeStore store, String label) {
-		// TODO Auto-generated method stub
-		return false;
+		return store.getAnnotationType(getType(), label) != null;
 	}
 
 	@Override
 	public IConstructor setAnnotation(String label, IValue newValue)
 			throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
+		return new Constructor(type, children, annotations.assoc(label, newValue));
 	}
 
 	@Override
-	public IConstructor joinAnnotations(Map<String, IValue> annotations) {
-		// TODO Auto-generated method stub
-		return null;
+	public IConstructor joinAnnotations(Map<String, IValue> newAnnotationsMap) {
+		IPersistentMap newAnnotations = core$merge(annotations, PersistentHashMap.create(newAnnotationsMap));
+		return new Constructor(type, children, newAnnotations);
 	}
 
 	@Override
-	public IConstructor setAnnotations(Map<String, IValue> annotations) {
-		// TODO Auto-generated method stub
-		return null;
+	public IConstructor setAnnotations(Map<String, IValue> newAnnotations) {
+		return new Constructor(type, children, PersistentHashMap.create(newAnnotations));
+
 	}
 
 	@Override
 	public IConstructor removeAnnotations() {
-		// TODO Auto-generated method stub
-		return null;
+		return new Constructor(type, children, (IPersistentMap) annotations.empty());	
 	}
 
 	@Override
 	public IConstructor removeAnnotation(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return new Constructor(type, children, annotations.without(key));
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Constructor) {
+			Constructor that = (Constructor) other;
+			return this.name.equals(that.name) 
+					&& this.children.equiv(that.children);
+//					&& this.annotations.equiv(that.annotations);
+		} else {
+			return false;
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	protected int computeHashCode() {
+		int hash = name != null ? name.hashCode() : 0;
+
+		for (Object child : (Iterable) children) {
+			hash = (hash << 1) ^ (hash >> 1) ^ child.hashCode();
+		}
+		return hash;
+	}
+
+	@Override
+	public int hashCode() {
+		if (hash == 0) {
+			hash = computeHashCode();
+		}
+		return hash;
+	}	
+	
 }
