@@ -19,6 +19,6 @@ public class TestSet extends BaseTestSet {
 
 	@Override
 	protected void setUp() throws Exception {
-		super.setUp(new ValueFactory());
+		super.setUp(ValueFactory.getInstance());
 	}
 }

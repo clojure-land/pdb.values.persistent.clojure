@@ -7,6 +7,6 @@ public class TestBasicValues extends BaseTestBasicValues {
 	
 	@Override
 	protected void setUp() throws Exception {
-		super.setUp(new ValueFactory());
+		super.setUp(ValueFactory.getInstance());
 	}
 }

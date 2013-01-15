@@ -20,8 +20,6 @@ import org.eclipse.imp.pdb.facts.type.Type;
 
 abstract class Value implements IValue {
 
-	protected static ValueFactory factory = new ValueFactory(); 
-	
 	protected final Type type;
 	
 	protected Value(Type type) {

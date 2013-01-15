@@ -269,7 +269,7 @@ public class Relation extends Set implements IRelation {
 		Type resultType = getType().closure();
 		// an exception will have been thrown if the type is not acceptable
 
-		ISetWriter reflex = factory.relationWriter(resultType.getElementType());
+		ISetWriter reflex = ValueFactory.getInstance().relationWriter(resultType.getElementType());
 
 		for (IValue e: carrier()) {
 			reflex.insert(new Tuple(new IValue[] {e, e}));
@@ -282,7 +282,7 @@ public class Relation extends Set implements IRelation {
 	public ISet carrier() {
 		// NOTE: from reference
 		Type newType = getType().carrier();
-		ISetWriter w = factory.setWriter(newType.getElementType());
+		ISetWriter w = ValueFactory.getInstance().setWriter(newType.getElementType());
 		
 		for (IValue t : this) {
 			w.insertAll((ITuple) t);
@@ -295,7 +295,7 @@ public class Relation extends Set implements IRelation {
 	public ISet domain() {
 		// NOTE: from reference
 		Type relType = getType();
-		ISetWriter w = factory.setWriter(relType.getFieldType(0));
+		ISetWriter w = ValueFactory.getInstance().setWriter(relType.getFieldType(0));
 		
 		for (IValue elem : this) {
 			ITuple tuple = (ITuple) elem;
@@ -308,7 +308,7 @@ public class Relation extends Set implements IRelation {
 		// NOTE: from reference
 		Type relType = getType();
 		int last = relType.getArity() - 1;
-		ISetWriter w = factory.setWriter(relType.getFieldType(last));
+		ISetWriter w = ValueFactory.getInstance().setWriter(relType.getFieldType(last));
 		
 		for (IValue elem : this) {
 			ITuple tuple = (ITuple) elem;
@@ -321,7 +321,7 @@ public class Relation extends Set implements IRelation {
 	public ISet select(int... fields) {
 		// NOTE: from reference
 		Type eltType = getFieldTypes().select(fields);
-		ISetWriter w = factory.setWriter(eltType);
+		ISetWriter w = ValueFactory.getInstance().setWriter(eltType);
 		
 		for (IValue v : this) {
 			w.insert(((ITuple) v).select(fields));

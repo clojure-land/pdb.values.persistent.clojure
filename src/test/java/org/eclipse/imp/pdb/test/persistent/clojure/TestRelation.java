@@ -18,7 +18,7 @@ import org.eclipse.imp.pdb.test.BaseTestRelation;
 public class TestRelation extends BaseTestRelation {
 	@Override
 	protected void setUp() throws Exception {
-		super.setUp(new ValueFactory());
+		super.setUp(ValueFactory.getInstance());
 	}
 
 }

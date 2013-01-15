@@ -36,6 +36,18 @@ import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
 public class ValueFactory extends BaseValueFactory implements IValueFactory {
 
+	/*package*/ ValueFactory(){
+		super();
+	}	
+	
+	private static class InstanceKeeper{
+		public final static ValueFactory instance = new ValueFactory();
+	}
+	
+	public static ValueFactory getInstance(){
+		return InstanceKeeper.instance;
+	}	
+	
 	@Override
 	public IConstructor constructor(Type constructorType) {
 		return new Constructor(constructorType);

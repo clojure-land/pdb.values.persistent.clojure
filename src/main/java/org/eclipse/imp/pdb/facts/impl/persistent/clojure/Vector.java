@@ -222,7 +222,7 @@ class Vector extends Value implements IList {
 	public IListRelation product(IList other) {
 		// NOTE: copied from fast list
 		Type resultType = TypeFactory.getInstance().tupleType(getElementType(), other.getElementType());
-		IListRelationWriter w = factory.listRelationWriter(resultType);
+		IListRelationWriter w = ValueFactory.getInstance().listRelationWriter(resultType);
 
 		for(IValue t1 : this){
 			for(IValue t2 : other){
@@ -239,7 +239,7 @@ class Vector extends Value implements IList {
 	@Override
 	public <IListOrRel extends IList> IListOrRel intersect(IList other) {
 		// NOTE: copied from fast list
-		IListWriter w = factory.listWriter(other.getElementType().lub(getElementType()));
+		IListWriter w = ValueFactory.getInstance().listWriter(other.getElementType().lub(getElementType()));
 		for (IValue v: this) {
 			if (other.contains(v)) {
 				other = other.delete(v);
@@ -253,7 +253,7 @@ class Vector extends Value implements IList {
 	@Override
 	public <IListOrRel extends IList> IListOrRel subtract(IList other) {
 		// NOTE: copied from fast list
-		IListWriter w = factory.listWriter(other.getElementType().lub(getElementType()));
+		IListWriter w = ValueFactory.getInstance().listWriter(other.getElementType().lub(getElementType()));
 		for (IValue v: this) {
 			if (other.contains(v)) {
 				other = other.delete(v);

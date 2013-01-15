@@ -20,6 +20,6 @@ public class TestValueFactory extends BaseTestValueFactory {
 
 	@Override
 	protected void setUp() throws Exception {
-		super.setUp(new ValueFactory());
+		super.setUp(ValueFactory.getInstance());
 	}
 }

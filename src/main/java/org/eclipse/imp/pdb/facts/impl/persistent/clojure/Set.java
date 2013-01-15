@@ -146,7 +146,7 @@ class Set extends Value implements ISet {
 		Set that = (Set) other;
 		
 		Type resultType = TypeFactory.getInstance().tupleType(this.et, that.et);
-		IRelationWriter result = factory.relationWriter(resultType);
+		IRelationWriter result = ValueFactory.getInstance().relationWriter(resultType);
 		
 		for (IValue x : this) {
 			for (IValue y : that) {

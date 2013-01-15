@@ -115,7 +115,7 @@ public class Map extends Value implements IMap {
 	@Override
 	public IMap compose(IMap other) {
 		Map that = (Map) other;
-		IMapWriter writer = factory.mapWriter(this.kt, that.vt);
+		IMapWriter writer = ValueFactory.getInstance().mapWriter(this.kt, that.vt);
 		
 		for (IValue key : this) {
 			if (that.containsKey(key)) writer.put(key, that.get(key));
@@ -127,7 +127,7 @@ public class Map extends Value implements IMap {
 	@Override
 	public IMap common(IMap other) {
 		Map that = (Map) other;
-		IMapWriter writer = factory.mapWriter(this.kt, that.vt);
+		IMapWriter writer = ValueFactory.getInstance().mapWriter(this.kt, that.vt);
 		
 		for (IValue key : this) {
 			if (that.containsKey(key) && this.get(key).equals(that.get(key))) {

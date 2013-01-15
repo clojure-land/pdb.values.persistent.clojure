@@ -64,7 +64,7 @@ public class ListRelation extends List implements IListRelation {
 		Type resultType = getType().compose(other.getType());
 		// an exception will have been thrown if the relations are not both binary and
 		// have a comparable field to compose.
-		IListRelationWriter w = factory.listRelationWriter(resultType.getFieldTypes());
+		IListRelationWriter w = ValueFactory.getInstance().listRelationWriter(resultType.getFieldTypes());
 
 		for (IValue v1 : (Iterable<IValue>) xs) {
 			ITuple tuple1 = (ITuple) v1;
@@ -101,7 +101,7 @@ public class ListRelation extends List implements IListRelation {
 		Type resultType = getType().closure();
 		// an exception will have been thrown if the type is not acceptable
 
-		IListWriter reflex = factory.listRelationWriter(resultType.getElementType());
+		IListWriter reflex = ValueFactory.getInstance().listRelationWriter(resultType.getElementType());
 
 		for (IValue e: carrier()) {
 			reflex.insert(new Tuple(new IValue[] {e, e}));
@@ -114,7 +114,7 @@ public class ListRelation extends List implements IListRelation {
 	public IList carrier() {
 		// NOTE: from reference
 		Type newType = getType().carrier();
-		IListWriter w = factory.listWriter(newType.getElementType());
+		IListWriter w = ValueFactory.getInstance().listWriter(newType.getElementType());
 		
 		for (IValue t : this) {
 			w.insertAll((ITuple) t);
@@ -132,7 +132,7 @@ public class ListRelation extends List implements IListRelation {
 	public IList domain() {
 		// NOTE: from reference
 		Type relType = getType();
-		IListWriter w = factory.listWriter(relType.getFieldType(0));
+		IListWriter w = ValueFactory.getInstance().listWriter(relType.getFieldType(0));
 		
 		for (IValue elem : this) {
 			ITuple tuple = (ITuple) elem;
@@ -145,7 +145,7 @@ public class ListRelation extends List implements IListRelation {
 		// NOTE: from reference
 		Type relType = getType();
 		int last = relType.getArity() - 1;
-		IListWriter w = factory.listWriter(relType.getFieldType(last));
+		IListWriter w = ValueFactory.getInstance().listWriter(relType.getFieldType(last));
 		
 		for (IValue elem : this) {
 			ITuple tuple = (ITuple) elem;
@@ -158,7 +158,7 @@ public class ListRelation extends List implements IListRelation {
 	public IList select(int... fields) {
 		// NOTE: from reference
 		Type eltType = getFieldTypes().select(fields);
-		IListWriter w = factory.listWriter(eltType);
+		IListWriter w = ValueFactory.getInstance().listWriter(eltType);
 		
 		for (IValue v : this) {
 			w.insert(((ITuple) v).select(fields));
