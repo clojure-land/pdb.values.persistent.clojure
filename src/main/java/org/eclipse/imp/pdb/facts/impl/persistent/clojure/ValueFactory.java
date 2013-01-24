@@ -189,12 +189,14 @@ public class ValueFactory extends BaseValueFactory implements IValueFactory {
 
 	@Override
 	public ISetWriter setWriter() {
-		return new SetWriterWithTypeInference();
+//		return new SetWriterWithTypeInference();
+		return new FastSetWriter();
 	}
 
 	@Override
 	public ISetWriter setWriter(Type et) {
-		return et.isTupleType() ? new RelationWriter(et) : new SetWriter(et);
+//		return et.isTupleType() ? new RelationWriter(et) : new SetWriter(et);
+		return new FastSetWriter(et);
 	}
 
 	@Override

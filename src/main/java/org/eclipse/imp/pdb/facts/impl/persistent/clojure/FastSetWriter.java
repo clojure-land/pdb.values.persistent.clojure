@@ -13,8 +13,8 @@ package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
 import java.util.Iterator;
 
-import org.eclipse.imp.pdb.facts.IRelation;
-import org.eclipse.imp.pdb.facts.IRelationWriter;
+import org.eclipse.imp.pdb.facts.ISet;
+import org.eclipse.imp.pdb.facts.ISetWriter;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.impl.util.collections.ShareableValuesHashSet;
 import org.eclipse.imp.pdb.facts.type.Type;
@@ -26,67 +26,59 @@ import clojure.lang.PersistentHashSet;
 
 // TODO Add checking.
 /**
- * Implementation of IRelationWriter.
+ * Implementation of ISetWriter.
  * 
  * @author Arnold Lankamp
  */
-/*package*/ class FastRelationWriter implements IRelationWriter{
-	protected Type tupleType;
+/*package*/ class FastSetWriter implements ISetWriter{
+	protected Type elementType;
+	protected final boolean inferred;
 	
 	protected final ShareableValuesHashSet data;
 	
-	protected IRelation constructedRelation;
-
-	protected final boolean inferred;
+	protected ISet constructedSet;
 	
-	/*package*/ FastRelationWriter(Type tupleType){
+	/*package*/ FastSetWriter(Type elementType){
 		super();
 		
-		if (!tupleType.isTupleType()) {
-			throw new IllegalArgumentException("should be a tuple type");
-		}
-		
-		this.tupleType = tupleType;
+		this.elementType = elementType;
 		this.inferred = false;
 		
 		data = new ShareableValuesHashSet();
 		
-		constructedRelation = null;
+		constructedSet = null;
 	}
 	
-	/*package*/ FastRelationWriter(){
+	/*package*/ FastSetWriter(){
 		super();
 		
-		this.tupleType = TypeFactory.getInstance().voidType();
-		
-		data = new ShareableValuesHashSet();
-		
-		constructedRelation = null;
+		this.elementType = TypeFactory.getInstance().voidType();
 		this.inferred = true;
+		
+		data = new ShareableValuesHashSet();
+		
+		constructedSet = null;
 	}
-	
-	/*package*/ FastRelationWriter(Type tupleType, ShareableValuesHashSet data){
+
+	/*package*/ FastSetWriter(Type elementType, ShareableValuesHashSet data){
 		super();
 		
-		this.tupleType = tupleType;
-		this.data = new ShareableValuesHashSet(data);
+		this.elementType = elementType;
 		this.inferred = false;
+		this.data = data;
 		
-		constructedRelation = null;
+		constructedSet = null;
 	}
 	
-	public void insert(IValue element){
+	public void insert(IValue value){
 		checkMutation();
-		updateType(element);
-		data.add(element);
+		updateType(value);
+		data.add(value);
 	}
 	
-	private void updateType(IValue element) {
+	private void updateType(IValue value) {
 		if (inferred) {
-			tupleType = tupleType.lub(element.getType());
-			if (!tupleType.isTupleType()) {
-				throw new IllegalArgumentException("relations can only contain tuples of the same arity");
-			} 
+			elementType = elementType.lub(value.getType());
 		}
 	}
 
@@ -121,20 +113,20 @@ import clojure.lang.PersistentHashSet;
 	}
 
 	protected void checkMutation(){
-		if(constructedRelation != null) throw new UnsupportedOperationException("Mutation of a finalized map is not supported.");
+		if(constructedSet != null) throw new UnsupportedOperationException("Mutation of a finalized map is not supported.");
 	}
 	
-	public IRelation done(){
+	public ISet done(){
 		ITransientCollection ret = PersistentHashSet.EMPTY.asTransient();
 		for(Object item : data)
 			ret = ret.conj(item);
 		
 		IPersistentSet persistentData = (IPersistentSet) ret.persistent();
 		
-		if (constructedRelation == null) {
-			constructedRelation = SetOrRel.apply(tupleType, persistentData);
+		if (constructedSet == null) {
+			constructedSet = SetOrRel.apply(elementType, persistentData);
 		}
 		
-		return constructedRelation;
+		return constructedSet;
 	}
 }
