@@ -76,13 +76,14 @@ public class Map extends Value implements IMap {
 
 	@Override
 	public boolean containsValue(IValue value) {
-		Iterator<IValue> it = valueIterator();
-		
-		while (it.hasNext()) {
-			if (it.next().equals(value)) return true;
-		}
-		
-		return false;
+		return ((APersistentMap) xs).containsValue(value);
+//		Iterator<IValue> it = valueIterator();
+//		
+//		while (it.hasNext()) {
+//			if (it.next().equals(value)) return true;
+//		}
+//		
+//		return false;
 	}
 
 	@Override
