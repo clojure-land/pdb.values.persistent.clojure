@@ -14,6 +14,7 @@ package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.INode;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
@@ -141,6 +142,13 @@ public class Node extends Value implements INode {
 	}
 
 	@Override
+	public INode replace(int first, int second, int end, IList repl)
+			throws FactTypeUseException, IndexOutOfBoundsException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Node) {
 			Node that = (Node) other;
@@ -169,5 +177,5 @@ public class Node extends Value implements INode {
 		}
 		return hash;
 	}
-	
+
 }

@@ -323,5 +323,13 @@ class List extends Value implements IList {
 			}
 		return true;
 	}
+
+	@Override
+	public <IListOrRel extends IList> IListOrRel replace(int first, int second,
+			int end, IList repl) throws FactTypeUseException,
+			IndexOutOfBoundsException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

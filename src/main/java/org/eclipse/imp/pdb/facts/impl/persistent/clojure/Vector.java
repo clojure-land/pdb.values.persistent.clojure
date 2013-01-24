@@ -264,6 +264,14 @@ class Vector extends Value implements IList {
 	}
 
 	@Override
+	public <IListOrRel extends IList> IListOrRel replace(int first, int second,
+			int end, IList repl) throws FactTypeUseException,
+			IndexOutOfBoundsException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
 	public boolean isSubListOf(IList other) {
 		// NOTE: copied from fast list
 		int j = 0;
@@ -280,5 +288,5 @@ class Vector extends Value implements IList {
 			}
 		return true;
 	}
-	
+
 }
