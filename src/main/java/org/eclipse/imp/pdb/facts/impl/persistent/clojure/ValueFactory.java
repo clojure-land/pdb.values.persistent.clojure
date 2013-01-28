@@ -229,5 +229,10 @@ public class ValueFactory extends BaseValueFactory implements IValueFactory {
 	public ITuple tuple(Type type, IValue... values) {
 		return new Tuple(type, values);
 	}
-
+	
+	@Override
+	public String toString() {
+		return "VF_CLOJURE";
+	}
+	
 }
