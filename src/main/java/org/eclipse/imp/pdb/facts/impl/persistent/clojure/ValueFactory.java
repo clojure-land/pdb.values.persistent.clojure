@@ -25,22 +25,21 @@ import org.eclipse.imp.pdb.facts.IRelation;
 import org.eclipse.imp.pdb.facts.IRelationWriter;
 import org.eclipse.imp.pdb.facts.ISet;
 import org.eclipse.imp.pdb.facts.ISetWriter;
-import org.eclipse.imp.pdb.facts.IString;
 import org.eclipse.imp.pdb.facts.ITuple;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
-import org.eclipse.imp.pdb.facts.impl.BaseValueFactory;
+import org.eclipse.imp.pdb.facts.impl.fast.FastBaseValueFactory;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-public class ValueFactory extends BaseValueFactory implements IValueFactory {
+public class ValueFactory extends FastBaseValueFactory implements IValueFactory {
 
-	/*package*/ ValueFactory(){
+	/*package*/ ValueFactory() {
 		super();
 	}	
 	
-	private static class InstanceKeeper{
+	private static class InstanceKeeper {
 		public final static ValueFactory instance = new ValueFactory();
 	}
 	
@@ -197,22 +196,6 @@ public class ValueFactory extends BaseValueFactory implements IValueFactory {
 	public ISetWriter setWriter(Type et) {
 //		return et.isTupleType() ? new RelationWriter(et) : new SetWriter(et);
 		return new FastSetWriter(et);
-	}
-
-	@Override
-	public IString string(int cp) throws IllegalArgumentException {
-		StringBuilder builder = new StringBuilder(1);
-		builder.appendCodePoint(cp);
-		return string(builder.toString());
-	}
-
-	@Override
-	public IString string(int[] codePoints) throws IllegalArgumentException {
-		StringBuilder builder = new StringBuilder(codePoints.length);
-		for (int cp : codePoints) {
-			builder.appendCodePoint(cp);
-		}
-		return string(builder.toString());
 	}
 
 	@Override
