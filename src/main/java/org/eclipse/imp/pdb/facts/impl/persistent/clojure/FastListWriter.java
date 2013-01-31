@@ -1,4 +1,3 @@
-package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 /*******************************************************************************
 * Copyright (c) 2009 Centrum Wiskunde en Informatica (CWI)
 * All rights reserved. This program and the accompanying materials
@@ -9,7 +8,7 @@ package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 * Contributors:
 *    Arnold Lankamp - interfaces and implementation
 *******************************************************************************/
-
+package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
 import java.util.Iterator;
 
