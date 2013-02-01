@@ -352,7 +352,7 @@ public class Relation extends Set implements IRelation {
 	public boolean equals(Object other) {
 		if (other instanceof Relation) {
 			Relation that = (Relation) other;
-			return this.xs.equiv(that.xs);
+			return this.xs.equals(that.xs);
 		} else {
 			return false;
 		}

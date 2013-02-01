@@ -207,7 +207,7 @@ class Vector extends Value implements IList {
 	public boolean equals(Object other) {
 		if (other instanceof Vector) {
 			Vector that = (Vector) other;
-			return this.xs.equiv(that.xs);
+			return this.xs.equals(that.xs);
 		} else {
 			return false;
 		}

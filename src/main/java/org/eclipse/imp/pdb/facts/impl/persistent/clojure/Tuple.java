@@ -117,7 +117,7 @@ public class Tuple extends Value implements ITuple {
 	public boolean equals(Object other) {
 		if (other instanceof Tuple) {
 			Tuple that = (Tuple) other;
-			return this.xs.equiv(that.xs);
+			return this.xs.equals(that.xs);
 		} else {
 			return false;
 		}

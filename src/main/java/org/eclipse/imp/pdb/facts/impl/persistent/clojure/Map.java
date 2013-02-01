@@ -221,7 +221,7 @@ public class Map extends Value implements IMap {
 	public boolean equals(Object other) {
 		if (other instanceof Map) {
 			Map that = (Map) other;
-			return this.xs.equiv(that.xs);
+			return this.xs.equals(that.xs);
 		} else {
 			return false;
 		}

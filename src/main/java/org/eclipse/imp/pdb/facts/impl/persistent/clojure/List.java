@@ -206,7 +206,7 @@ class List extends Value implements IList {
 	public boolean equals(Object other) {
 		if (other instanceof List) {
 			List that = (List) other;
-			return this.xs.equiv(that.xs);
+			return this.xs.equals(that.xs);
 		} else {
 			return false;
 		}

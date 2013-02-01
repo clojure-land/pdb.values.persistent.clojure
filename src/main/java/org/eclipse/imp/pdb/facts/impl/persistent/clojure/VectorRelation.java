@@ -197,7 +197,7 @@ public class VectorRelation extends Vector implements IListRelation {
 	public boolean equals(Object other) {
 		if (other instanceof VectorRelation) {
 			VectorRelation that = (VectorRelation) other;
-			return this.xs.equiv(that.xs);
+			return this.xs.equals(that.xs);
 		} else {
 			return false;
 		}

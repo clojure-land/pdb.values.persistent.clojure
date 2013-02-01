@@ -153,8 +153,8 @@ public class Node extends Value implements INode {
 		if (other instanceof Node) {
 			Node that = (Node) other;
 			return this.name.equals(that.name) 
-					&& this.children.equiv(that.children);
-//					&& this.annotations.equiv(that.annotations);
+					&& this.children.equals(that.children);
+//					&& this.annotations.equals(that.annotations);
 		} else {
 			return false;
 		}

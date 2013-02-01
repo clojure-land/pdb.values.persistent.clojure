@@ -167,7 +167,7 @@ class Set extends Value implements ISet {
 	public boolean equals(Object other) {
 		if (other instanceof Set) {
 			Set that = (Set) other;
-			return this.xs.equiv(that.xs);
+			return this.xs.equals(that.xs);
 		} else {
 			return false;
 		}
