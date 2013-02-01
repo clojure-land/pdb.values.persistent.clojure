@@ -30,18 +30,24 @@ import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
 
 public class Map extends Value implements IMap {
 
-	protected final Type kt, vt;
 	protected final IPersistentMap xs;		
 	
 	protected Map(Type kt, Type vt, IPersistentMap xs) {
 		super(TypeFactory.getInstance().mapType(kt, vt));
-		this.kt = kt;
-		this.vt = vt;
 		this.xs = xs;
 	}
 	
 	protected Map(Type kt, Type vt) {
 		this(kt, vt, PersistentHashMap.EMPTY);
+	}
+	
+	protected Map(Type mapType) {
+		this(mapType, PersistentHashMap.EMPTY);
+	}	
+	
+	protected Map(Type mapType, IPersistentMap xs) {
+		super(mapType);
+		this.xs = xs;
 	}	
 	
 	@Override
@@ -61,7 +67,25 @@ public class Map extends Value implements IMap {
 
 	@Override
 	public IMap put(IValue key, IValue value) {
-		return new Map(kt.lub(key.getType()), vt.lub(value.getType()), (IPersistentMap) xs.assoc(key, value));
+		
+		Type newMapType = getType();
+		Type newKeyType = getType().getKeyType().lub(key.getType());
+		Type newValueType = getType().getValueType().lub(value.getType());
+		
+		/*
+		 * special treatment necessary if type contains labels
+		 */
+		if (newKeyType != getType().getKeyType()
+				|| newValueType != getType().getValueType()) {
+
+			newMapType = TypeFactory.getInstance().mapType(
+					newKeyType,
+					getType().getKeyLabel(), 
+					newValueType,
+					getType().getValueLabel());
+		}	
+		
+		return new Map(newMapType, (IPersistentMap) xs.assoc(key, value));
 	}
 
 	@Override
@@ -88,18 +112,18 @@ public class Map extends Value implements IMap {
 
 	@Override
 	public Type getKeyType() {
-		return kt;
+		return getType().getKeyType();
 	}
 
 	@Override
 	public Type getValueType() {
-		return vt;
+		return getType().getValueType();
 	}
 
 	@Override
 	public IMap join(IMap other) {
 		Map that = (Map) other;
-		return new Map(kt.lub(that.kt), vt.lub(that.vt), core$merge(this.xs, that.xs));
+		return new Map(getType().lub(other.getType()), core$merge(this.xs, that.xs));
 	}
 
 	@Override
@@ -110,16 +134,34 @@ public class Map extends Value implements IMap {
 			result = result.without(key);
 		}
 
-		return new Map(kt, vt, result);
+		return new Map(getType(), result);
 	}
 
 	@Override
 	public IMap compose(IMap other) {
 		Map that = (Map) other;
-		IMapWriter writer = ValueFactory.getInstance().mapWriter(this.kt, that.vt);
-		
-		for (IValue key : this) {
-			if (that.containsKey(key)) writer.put(key, that.get(key));
+		IMapWriter writer;
+
+		if (this.getType().hasFieldNames() && that.getType().hasFieldNames()) {
+			/*
+			 * special treatment necessary if type contains labels
+			 */
+			Type newMapType = TypeFactory.getInstance().mapType(
+					this.getType().getKeyType(), 
+					this.getType().getKeyLabel(),
+					that.getType().getValueType(),
+					that.getType().getValueLabel());
+
+			writer = ValueFactory.getInstance().mapWriter(newMapType);
+		} else {
+			writer = ValueFactory.getInstance().mapWriter(this.getType().getKeyType(), that.getType().getValueType());
+		}		
+				
+		for (Iterator<Entry<IValue, IValue>> iterator = this.entryIterator(); iterator.hasNext();) {
+			Entry<IValue, IValue> pair = iterator.next();
+			
+			if (that.containsKey(pair.getValue()))
+				writer.put(pair.getKey(), that.get(pair.getValue()));
 		}
 		
 		return writer.done();
@@ -128,7 +170,7 @@ public class Map extends Value implements IMap {
 	@Override
 	public IMap common(IMap other) {
 		Map that = (Map) other;
-		IMapWriter writer = ValueFactory.getInstance().mapWriter(this.kt, that.vt);
+		IMapWriter writer = ValueFactory.getInstance().mapWriter(getType().lub(other.getType()));
 		
 		for (IValue key : this) {
 			if (that.containsKey(key) && this.get(key).equals(that.get(key))) {

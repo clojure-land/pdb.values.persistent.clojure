@@ -115,12 +115,12 @@ public class ValueFactory extends FastBaseValueFactory implements IValueFactory 
 
 	@Override
 	public IMap map(Type mapType) {
-		return map(mapType.getKeyType(), mapType.getValueType());
+		return mapWriter(mapType).done();
 	}
 
 	@Override
 	public IMap map(Type kt, Type vt) {
-		return mapWriter(TypeFactory.getInstance().voidType(), TypeFactory.getInstance().voidType()).done();
+		return mapWriter(kt, vt).done();
 	}
 
 	@Override
@@ -130,7 +130,7 @@ public class ValueFactory extends FastBaseValueFactory implements IValueFactory 
 
 	@Override
 	public IMapWriter mapWriter(Type mapType) {
-		return mapWriter(mapType.getKeyType(), mapType.getValueType());
+		return new MapWriter(mapType);
 	}
 
 	@Override

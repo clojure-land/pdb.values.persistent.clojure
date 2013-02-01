@@ -25,13 +25,18 @@ import clojure.lang.PersistentHashMap;
 
 class MapWriter implements IMapWriter {
 
-	protected final Type kt, vt;
+	protected final Type mapType;
 	protected ITransientMap xs;
 
+	protected MapWriter(Type mapType){
+		super();
+		this.mapType = mapType;
+		this.xs = PersistentHashMap.EMPTY.asTransient();
+	}
+	
 	protected MapWriter(Type kt, Type vt){
 		super();
-		this.kt = kt;
-		this.vt = vt;
+		this.mapType = TypeFactory.getInstance().mapType(kt, vt);
 		this.xs = PersistentHashMap.EMPTY.asTransient();
 	}
 	
@@ -74,9 +79,18 @@ class MapWriter implements IMapWriter {
 	@Override
 	public IMap done() {
 		IPersistentMap resultMap = xs.persistent();
-		Type resultKt = (resultMap.count() == 0) ? TypeFactory.getInstance().voidType() : kt;
-		Type resultVt = (resultMap.count() == 0) ? TypeFactory.getInstance().voidType() : vt;
-		return new Map(resultKt, resultVt, resultMap);
+		
+		if (resultMap.count() == 0) {
+			/*
+			 * special treatment necessary if type contains labels
+			 */
+			Type voidType = TypeFactory.getInstance().voidType();
+			Type voidMapType = TypeFactory.getInstance().mapType(voidType, mapType.getKeyLabel(), voidType, mapType.getValueLabel());
+		
+			return new Map(voidMapType, resultMap);
+		} else {
+			return new Map(mapType, resultMap);
+		}
 	}
 
 }
