@@ -9,8 +9,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	    <maven.compiler.target>1.6</maven.compiler.target>
-    	<maven.compiler.source>1.6</maven.compiler.source>
+	    <maven.compiler.target>1.7</maven.compiler.target>
+    	<maven.compiler.source>1.7</maven.compiler.source>
 	</properties>
 
 	<build>
@@ -32,17 +32,17 @@
 		<dependency>
 			<groupId>org.eclipse.imp</groupId>
 			<artifactId>org.eclipse.imp.pdb</artifactId>
-			<version>0.2.1.qualifier</version>
+			<version>0.4.0.qualifier</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.imp</groupId>
 			<artifactId>org.eclipse.imp.pdb.values</artifactId>
-			<version>0.3.2.qualifier</version>
+			<version>0.4.0.qualifier</version>
 		</dependency>
 		<dependency>
 			<groupId>org.clojure</groupId>
 			<artifactId>clojure</artifactId>
-			<version>1.5.0-RC3</version>
+			<version>1.5.0-RC16</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
