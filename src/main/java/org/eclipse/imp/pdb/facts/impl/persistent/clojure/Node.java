@@ -35,11 +35,10 @@ public class Node extends Value implements INode {
 	protected final String name;
 	protected final IPersistentVector children;
 	protected final IPersistentMap annotations;
-	protected int hash = 0;
 	
 	protected Node(Type type, String name, IPersistentVector children, IPersistentMap annotations) {
 		super(type);
-		this.name = name;
+		this.name = name.intern(); // NOTE: using intern() here!
 		this.children = children;
 		this.annotations = annotations;
 	}
@@ -161,19 +160,12 @@ public class Node extends Value implements INode {
 	}
 
 	@SuppressWarnings("rawtypes")
-	protected int computeHashCode() {
-		int hash = name != null ? name.hashCode() : 0;
-
-		for (Object child : (Iterable) children) {
-			hash = (hash << 1) ^ (hash >> 1) ^ child.hashCode();
-		}
-		return hash;
-	}
-
 	@Override
 	public int hashCode() {
-		if (hash == 0) {
-			hash = computeHashCode();
+		int hash = 0;
+		
+		for (Object child : (Iterable) children) {
+			hash = (hash << 1) ^ (hash >> 1) ^ child.hashCode();
 		}
 		return hash;
 	}

@@ -30,8 +30,6 @@ import clojure.lang.PersistentVector;
 
 public class Constructor extends Node implements IConstructor {
 
-	protected int hash = 0;
-	
 	protected Constructor(Type constructorType, IPersistentVector children, IPersistentMap annotations) {
 		super(constructorType, constructorType.getName(), children, annotations);
 	}
@@ -134,23 +132,15 @@ public class Constructor extends Node implements IConstructor {
 			return false;
 		}
 	}
-
+	
 	@SuppressWarnings("rawtypes")
-	protected int computeHashCode() {
-		int hash = name != null ? name.hashCode() : 0;
-
+	@Override
+	public int hashCode(){
+		int hash = getConstructorType().hashCode();
+		
 		for (Object child : (Iterable) children) {
 			hash = (hash << 1) ^ (hash >> 1) ^ child.hashCode();
-		}
-		return hash;
-	}
-
-	@Override
-	public int hashCode() {
-		if (hash == 0) {
-			hash = computeHashCode();
-		}
+		}		
 		return hash;
 	}	
-	
 }
