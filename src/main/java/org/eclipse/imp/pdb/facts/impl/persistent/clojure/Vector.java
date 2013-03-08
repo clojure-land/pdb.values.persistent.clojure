@@ -105,15 +105,24 @@ class Vector extends Value implements IList {
 	public <IListOrRel extends IList> IListOrRel concat(IList other) {
 		Vector that = (Vector) other;
 		
-		ITransientVector result = PersistentVector.EMPTY.asTransient();
+		ITransientVector result = null;
 		
-		for(Object item : (Iterable) this.xs)
-			result = (ITransientVector) result.conj(item);
+		if (this.xs instanceof PersistentVector) {
+			// turn into transient
+			result = ((PersistentVector) this.xs).asTransient();		
+		} else {
+			// perform eager copy
+			result = PersistentVector.EMPTY.asTransient();
 
+			for(Object item : (Iterable) this.xs)
+				result = (ITransientVector) result.conj(item);
+		}
+		
 		for(Object item : (Iterable) that.xs)
 			result = (ITransientVector) result.conj(item);
 		
-		return VectorOrRel.apply(this.lub(that), (IPersistentVector) result.persistent());
+		return VectorOrRel.apply(this.lub(that),
+				(IPersistentVector) result.persistent());
 	}
 
 	@Override
@@ -146,7 +155,10 @@ class Vector extends Value implements IList {
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	public boolean contains(IValue x) {
-		return ((java.util.Collection) xs).contains(x);
+		for (IValue e : this) {
+			if (e.equals(x)) return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -168,21 +180,32 @@ class Vector extends Value implements IList {
 	@Override
 	public <IListOrRel extends IList> IListOrRel delete(int i) {
 		if (i < 0 || i >= xs.count()) throw new IndexOutOfBoundsException();
-		ITransientVector result = PersistentVector.EMPTY.asTransient();
 		
-		boolean skipped = false;
-		int idx = 0;
-		for (Iterator it = ((Iterable) xs).iterator(); it.hasNext(); idx++) {
-			Object item = it.next();
-			
-			if (!skipped && i == idx) {
-				skipped = true;
+		IPersistentVector result = PersistentVector.EMPTY;
+		
+		if (xs.count() != 1) {
+			if (i == 0) {
+				result = clojure.lang.RT.subvec(xs, 1, xs.count());
+			} else if (i == xs.count() - 1) {
+				result = clojure.lang.RT.subvec(xs, 0, xs.count() - 1);
 			} else {
-				result = (ITransientVector) result.conj(item);
+				IPersistentVector l = clojure.lang.RT.subvec(xs, 0, i);
+				IPersistentVector r = clojure.lang.RT.subvec(xs, i+1, xs.count());				
+
+				// perform eager copy
+				ITransientVector transientResult = PersistentVector.EMPTY.asTransient();
+				
+				for(Object item : (Iterable) l)
+					transientResult = (ITransientVector) transientResult.conj(item);			
+
+				for(Object item : (Iterable) r)
+					transientResult = (ITransientVector) transientResult.conj(item);
+					
+				result = (IPersistentVector) transientResult.persistent();
 			}
-		}		
+		}
 		
-		return VectorOrRel.apply(et, (IPersistentVector) result.persistent());
+		return VectorOrRel.apply(et, (IPersistentVector) result);		
 	}
 
 	@Override
