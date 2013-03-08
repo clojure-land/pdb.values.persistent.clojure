@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$merge;
+
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -24,9 +26,8 @@ import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
 import clojure.lang.APersistentMap;
 import clojure.lang.IPersistentMap;
+import clojure.lang.ITransientMap;
 import clojure.lang.PersistentHashMap;
-
-import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
 
 public class Map extends Value implements IMap {
 
@@ -90,7 +91,7 @@ public class Map extends Value implements IMap {
 
 	@Override
 	public IValue get(IValue key) {
-		return (IValue) xs.valAt(key, null);
+		return (IValue) xs.valAt(key);
 	}
 
 	@Override
@@ -101,10 +102,19 @@ public class Map extends Value implements IMap {
 	@Override
 	public boolean containsValue(IValue value) {
 		return ((APersistentMap) xs).containsValue(value);
+
 //		Iterator<IValue> it = valueIterator();
 //		
 //		while (it.hasNext()) {
 //			if (it.next().equals(value)) return true;
+//		}
+//		
+//		return false;
+				
+//		Iterator<IMapEntry> it = xs.iterator();
+//		
+//		while (it.hasNext()) {
+//			if (it.next().val().equals(value)) return true;
 //		}
 //		
 //		return false;
@@ -128,13 +138,13 @@ public class Map extends Value implements IMap {
 
 	@Override
 	public IMap remove(IMap other) {
-		IPersistentMap result = xs;
+		ITransientMap transientResult = ((PersistentHashMap) xs).asTransient();
 		
 		for (IValue key: other) {
-			result = result.without(key);
+			transientResult = transientResult.without(key);
 		}
 
-		return new Map(getType(), result);
+		return new Map(getType(), transientResult.persistent());
 	}
 
 	@Override
@@ -207,7 +217,7 @@ public class Map extends Value implements IMap {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Iterator<IValue> valueIterator() {
-		return ((APersistentMap) xs).values().iterator();
+		return ((APersistentMap) xs).values().iterator();		
 //		ISeq vals = core$vals(xs);
 //		if (vals == null) 
 //			return ((Iterable<IValue>) PersistentList.EMPTY).iterator();
