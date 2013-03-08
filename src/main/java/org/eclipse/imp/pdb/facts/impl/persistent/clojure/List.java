@@ -11,7 +11,18 @@
  *******************************************************************************/
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
-import java.io.StringReader;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$concat;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$conj;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$cons;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$drop;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$next;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$nthnext;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$rest;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$reverse;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$some;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$splitAt;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$take;
+
 import java.util.Iterator;
 
 import org.eclipse.imp.pdb.facts.IList;
@@ -26,48 +37,14 @@ import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-import clojure.lang.IFn;
 import clojure.lang.IPersistentCollection;
-import clojure.lang.ISeq;
 import clojure.lang.IPersistentVector;
+import clojure.lang.ISeq;
 import clojure.lang.PersistentHashSet;
 import clojure.lang.PersistentList;
-import clojure.lang.RT;
-import clojure.lang.Compiler;
-import clojure.lang.Symbol;
-import clojure.lang.Var;
-
-import static clojure.lang.RT.CLOJURE_NS;
-import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
 
 class List extends Value implements IList {
 
-	/**
-	 * Use the Clojure compiler to create functions references code that
-	 * is difficult to express purely in Java. 
-	 */
-	static {
-		/**
-		 * E.g. (first (keep-indexed #(if (= 15 %2) %1) [0 0 0 15 15])) returns 3.
-		 */
-	    String str = "(ns pdb-list) (defn firstIndexOf [x coll] (first (keep-indexed #(if (= x %2) %1) coll)))";
-	    Compiler.load(new StringReader(str));
-
-	    pdblist$firstIndexOf = RT.var("pdb-list", "firstIndexOf");		
-	}
-	
-	/**
-	 * Creates a reference to functions that are contained in "clojure.core".
-	 * 
-	 * @param functionName name of the function present in "clojure.core"
-	 * @return reference to the function
-	 */
-	static IFn clojure$core_reference(String functionName) {
-		return Var.intern(CLOJURE_NS, Symbol.intern(null, functionName));
-	}
-	
-	private final static IFn pdblist$firstIndexOf;
-	
 	protected final Type et;
 	protected final ISeq xs;
 	
@@ -246,8 +223,19 @@ class List extends Value implements IList {
 	}
 	
 	protected static ISeq deleteFromSeq(ISeq xs, IValue x) {
-	    Object result = pdblist$firstIndexOf.invoke(x, xs);	    
-	    return (result == null) ? xs : deleteFromSeq(xs, ((Long)result).intValue());		
+		int i = 0;
+		ISeq ys = xs;
+
+		while (ys != null && ys.first() != null) {
+			if (ys.first().equals(x)) {
+				return core$concat(core$take(i, xs), ys.next());
+			}
+			
+			i = i + 1;
+			ys = ys.next();
+		}
+		
+		return xs;
 	}	
 	
 	protected static ISeq deleteFromSeq(ISeq xs, int i) {

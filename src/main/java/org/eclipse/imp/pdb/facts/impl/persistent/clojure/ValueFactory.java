@@ -89,28 +89,28 @@ public class ValueFactory extends FastBaseValueFactory implements IValueFactory 
 
 	@Override
 	public IListRelationWriter listRelationWriter() {
-//		return new ListRelationWriterWithTypeInference();
-		return new VectorRelationWriterWithTypeInference();
+		return new ListRelationWriterWithTypeInference();
+//		return new VectorRelationWriterWithTypeInference();
 	}
 
 	@Override
 	public IListRelationWriter listRelationWriter(Type et) {
-//		return new ListRelationWriter(et);
-		return new VectorRelationWriter(et);	
+		return new ListRelationWriter(et);
+//		return new VectorRelationWriter(et);	
 	}
 
 	@Override
 	public IListWriter listWriter() {
-//		return new ListWriterWithTypeInference();
+		return new ListWriterWithTypeInference();
 //		return new VectorWriterWithTypeInference();
-		return new FastListWriter();
+//		return new FastListWriter();
 	}
 
 	@Override
 	public IListWriter listWriter(Type et) {
-//		return new ListWriter(et);
+		return new ListWriter(et);
 //		return new VectorWriter(et);
-		return new FastListWriter(et);		
+//		return new FastListWriter(et);		
 	}
 
 	@Override

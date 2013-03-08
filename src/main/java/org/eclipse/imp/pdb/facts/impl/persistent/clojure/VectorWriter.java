@@ -112,6 +112,7 @@ class VectorWriter implements IListWriter {
 	}
 
 	@Override
+	// TODO: broken, because a ITransientVector is not iterable
 	public void delete(IValue x) {
 		ITransientVector result = PersistentVector.EMPTY.asTransient();
 		
@@ -128,6 +129,7 @@ class VectorWriter implements IListWriter {
 	}
 
 	@Override
+	// TODO: broken, because a ITransientVector is not iterable
 	public void delete(int i) {
 		ITransientVector result = PersistentVector.EMPTY.asTransient();
 		

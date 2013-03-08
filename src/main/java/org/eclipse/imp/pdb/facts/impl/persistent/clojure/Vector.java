@@ -25,12 +25,9 @@ import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
-import clojure.lang.ISeq;
 import clojure.lang.IPersistentVector;
 import clojure.lang.ITransientVector;
-import clojure.lang.PersistentList;
 import clojure.lang.PersistentVector;
-import clojure.lang.RT;
 
 class Vector extends Value implements IList {
 	
@@ -53,16 +50,6 @@ class Vector extends Value implements IList {
 		super(t);
 		this.et = et;
 		this.xs = xs;
-	}	
-	
-	static protected ISeq seq(IValue... values) {
-		ISeq result = PersistentList.EMPTY;
-		
-		for(int i = values.length-1; i >= 0; i--) {
-			result = result.cons(values[i]);
-		}
-		
-		return result;
 	}
 	
 	private Type lub(IValue x) {
@@ -153,7 +140,7 @@ class Vector extends Value implements IList {
 	@Override
 	public <IListOrRel extends IList> IListOrRel sublist(int i, int n) {
 		if (i < 0 || n < 0 || i + n > length()) throw new IndexOutOfBoundsException();
-		return VectorOrRel.apply(et, RT.subvec(xs, i, i+n));
+		return VectorOrRel.apply(et, clojure.lang.RT.subvec(xs, i, i+n));
 	}
 
 	@Override
