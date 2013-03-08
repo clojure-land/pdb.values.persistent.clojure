@@ -88,12 +88,7 @@ class Vector extends Value implements IList {
 
 	@Override
 	public <IListOrRel extends IList> IListOrRel append(IValue newItem) {
-		ITransientVector result = PersistentVector.EMPTY.asTransient();
-		for(Object item : (Iterable) xs)
-			result = (ITransientVector) result.conj(item);
-		result = (ITransientVector) result.conj(newItem);
-		
-		return VectorOrRel.apply(this.lub(newItem), (IPersistentVector) result.persistent());
+		return VectorOrRel.apply(this.lub(newItem), (IPersistentVector) xs.cons(newItem));
 	}
 
 	@Override
