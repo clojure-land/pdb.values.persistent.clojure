@@ -112,12 +112,12 @@ class VectorWriter implements IListWriter {
 	}
 
 	@Override
-	// TODO: broken, because a ITransientVector is not iterable
+	// NOTE: because a TransientVector turned persistent for iteration
 	public void delete(IValue x) {
 		ITransientVector result = PersistentVector.EMPTY.asTransient();
 		
 		boolean skipped = false;
-		for(Object item : (Iterable) xs) {
+		for(Object item : (Iterable) xs.persistent()) {
 			if (!skipped && item.equals(x)) {
 				skipped = true;
 			} else {
@@ -129,13 +129,13 @@ class VectorWriter implements IListWriter {
 	}
 
 	@Override
-	// TODO: broken, because a ITransientVector is not iterable
+	// NOTE: because a TransientVector turned persistent for iteration
 	public void delete(int i) {
 		ITransientVector result = PersistentVector.EMPTY.asTransient();
 		
 		boolean skipped = false;
 		int idx = 0;
-		for (Iterator it = ((Iterable) xs).iterator(); it.hasNext(); idx++) {
+		for (Iterator it = ((Iterable) xs.persistent()).iterator(); it.hasNext(); idx++) {
 			Object item = it.next();
 			
 			if (!skipped && i == idx) {
@@ -167,6 +167,7 @@ class VectorWriterWithTypeInference extends VectorWriter {
 	}
 
 	@Override
+	// TODO: turns vector into sequence for type inference
 	public IList done() {
 		IPersistentVector resultVector = (IPersistentVector) xs.persistent();
 		Type resultType = List.lub(resultVector.seq());
