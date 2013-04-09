@@ -155,6 +155,13 @@ public class ValueFactory extends FastBaseValueFactory implements IValueFactory 
 	}
 
 	@Override
+	public INode node(String name, IValue[] children,
+			Map<String, IValue> keyArgValues) throws FactTypeUseException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public IRelation relation(IValue... values) {
 		return new Relation(values);
 	}

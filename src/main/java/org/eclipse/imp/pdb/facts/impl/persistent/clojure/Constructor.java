@@ -205,5 +205,35 @@ public class Constructor extends Value implements IConstructor {
 			throws FactTypeUseException, IndexOutOfBoundsException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean hasKeywordArguments() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String[] getKeywordArgumentNames() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getKeywordIndex(String name) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public IValue getKeywordArgumentValue(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int positionalArity() {
+		// TODO Auto-generated method stub
+		return 0;
 	}	
 }
