@@ -19,7 +19,6 @@ import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
-import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
 import clojure.lang.IPersistentVector;
 import clojure.lang.ITransientVector;
@@ -32,14 +31,14 @@ public class Tuple extends Value implements ITuple {
 	protected Tuple(Type type, IPersistentVector xs) {
 		super(type);
 		this.xs = xs;
-		if (!type.isTupleType())
+		if (!type.isTuple())
 			throw new RuntimeException();
 	}
 	
 	protected Tuple(Type type, IValue... values) {
 		super(type);
 		xs = PersistentVector.create((Object[])values);
-		if (!type.isTupleType())
+		if (!type.isTuple())
 			throw new RuntimeException();
 	}	
 	
@@ -54,7 +53,7 @@ public class Tuple extends Value implements ITuple {
 	}
 
 	@Override
-	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
+	public <T, E extends Throwable> T accept(IValueVisitor<T, E> v) throws E {
 		return v.visitTuple(this);
 	}
 
@@ -87,7 +86,7 @@ public class Tuple extends Value implements ITuple {
 	public IValue select(int... fields) throws IndexOutOfBoundsException {
 		Type resultType = getType().select(fields);
 		
-		if (resultType.isTupleType()) {
+		if (resultType.isTuple()) {
 	    	ITransientVector resultVector = PersistentVector.EMPTY.asTransient();
 	    	for (int i : fields) {
 	    		resultVector = (ITransientVector) resultVector.conj(xs.nth(i));

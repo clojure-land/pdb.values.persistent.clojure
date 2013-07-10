@@ -26,16 +26,12 @@ import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.co
 import java.util.Iterator;
 
 import org.eclipse.imp.pdb.facts.IList;
-import org.eclipse.imp.pdb.facts.IListRelation;
-import org.eclipse.imp.pdb.facts.IListRelationWriter;
-import org.eclipse.imp.pdb.facts.IListWriter;
-import org.eclipse.imp.pdb.facts.ITuple;
 import org.eclipse.imp.pdb.facts.IValue;
+import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
+import org.eclipse.imp.pdb.facts.impl.AbstractList;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
-import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
-import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
 import clojure.lang.IPersistentCollection;
 import clojure.lang.IPersistentVector;
@@ -43,7 +39,7 @@ import clojure.lang.ISeq;
 import clojure.lang.PersistentHashSet;
 import clojure.lang.PersistentList;
 
-class List extends Value implements IList {
+class List extends AbstractList {
 
 	protected final Type et;
 	protected final ISeq xs;
@@ -67,16 +63,11 @@ class List extends Value implements IList {
 	}		
 	
 	protected List(Type et, ISeq xs) {
-		this(TypeFactory.getInstance().listType(et), et, xs);
-	}
-	
-	protected List(Type t, Type et, ISeq xs) {
-		super(t);
 		this.et = et;
 		this.xs = xs;
 		
-		if (t == null || et == null || xs == null) throw new NullPointerException();
-	}	
+		if (et == null || xs == null) throw new NullPointerException();
+	}
 	
 	private Type lub(IValue x) {
 		return et.lub(x.getType());
@@ -93,10 +84,10 @@ class List extends Value implements IList {
 	}
 
 	@Override
-	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
-		return v.visitList(this);
+	public Type getType() {
+		return inferListOrRelType(getElementType(), this);
 	}
-
+	
 	@Override
 	public Type getElementType() {
 		return et;
@@ -108,35 +99,35 @@ class List extends Value implements IList {
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel reverse() {
-		return ListOrRel.apply(et, core$reverse(xs));
+	public IList reverse() {
+		return new List(et, core$reverse(xs));
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel append(IValue x) {
-		return ListOrRel.apply(this.lub(x), appendAtSeq(xs, x));
+	public IList append(IValue x) {
+		return new List(this.lub(x), appendAtSeq(xs, x));
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel insert(IValue x) {
-		return ListOrRel.apply(this.lub(x), (ISeq) xs.cons(x));
+	public IList insert(IValue x) {
+		return new List(this.lub(x), (ISeq) xs.cons(x));
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel concat(IList other) {
+	public IList concat(IList other) {
 		List that = (List) other;
-		return ListOrRel.apply(this.lub(that), core$concat(this.xs, that.xs));
+		return new List(this.lub(that), core$concat(this.xs, that.xs));
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel put(int i, IValue x) throws FactTypeUseException,
+	public IList put(int i, IValue x) throws FactTypeUseException,
 			IndexOutOfBoundsException {
 		/**
 		 * Implementation requires (= contract) that i is a valid index. Note, that the
 		 * index check doesn't exploit the full potential of lazy sequences. 
 		 */
 		if (i < 0 || i >= length()) throw new IndexOutOfBoundsException();
-		return ListOrRel.apply(this.lub(x), replaceInSeq(xs, i, x));
+		return new List(this.lub(x), replaceInSeq(xs, i, x));
 	}
 	
 	@Override
@@ -150,9 +141,9 @@ class List extends Value implements IList {
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel sublist(int i, int n) {
+	public IList sublist(int i, int n) {
 		if (i < 0 || n < 0 || i + n > length()) throw new IndexOutOfBoundsException();
-		return ListOrRel.apply(et, core$take(n, core$drop(i, xs)));
+		return new List(et, core$take(n, core$drop(i, xs)));
 	}
 
 	@Override
@@ -169,14 +160,14 @@ class List extends Value implements IList {
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel delete(IValue x) {
-		return ListOrRel.apply(et, deleteFromSeq(xs, x));
+	public IList delete(IValue x) {
+		return new List(et, deleteFromSeq(xs, x));
 	}
 
 	@Override
-	public <IListOrRel extends IList> IListOrRel delete(int i) {
+	public IList delete(int i) {
 		if (i < 0 || i >= xs.count()) throw new IndexOutOfBoundsException();
-		return ListOrRel.apply(et, deleteFromSeq(xs, i));
+		return new List(et, deleteFromSeq(xs, i));
 	}
 
 	@Override
@@ -187,6 +178,11 @@ class List extends Value implements IList {
 		} else {
 			return false;
 		}
+	}
+	
+	@Override
+	public boolean isEqual(IValue other) {
+		return this.equals(other);
 	}
 
 	@Override
@@ -250,74 +246,8 @@ class List extends Value implements IList {
 	}
 
 	@Override
-	public IListRelation product(IList other) {
-		// NOTE: copied from fast list
-		Type resultType = TypeFactory.getInstance().tupleType(getElementType(), other.getElementType());
-		IListRelationWriter w = ValueFactory.getInstance().listRelationWriter(resultType);
-
-		for(IValue t1 : this){
-			for(IValue t2 : other){
-				IValue vals[] = {t1, t2};
-				ITuple t3 = new Tuple(resultType, vals);
-				w.insert(t3);
-			}
-		}
-
-		return (IListRelation) w.done();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <IListOrRel extends IList> IListOrRel intersect(IList other) {
-		// NOTE: copied from fast list
-		IListWriter w = ValueFactory.getInstance().listWriter(other.getElementType().lub(getElementType()));
-		for (IValue v: this) {
-			if (other.contains(v)) {
-				other = other.delete(v);
-			} else
-				w.append(v);
-		}
-		return (IListOrRel) w.done();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <IListOrRel extends IList> IListOrRel subtract(IList other) {
-		// NOTE: copied from fast list
-		IListWriter w = ValueFactory.getInstance().listWriter(other.getElementType().lub(getElementType()));
-		for (IValue v: this) {
-			if (other.contains(v)) {
-				other = other.delete(v);
-			} else
-				w.append(v);
-		}
-		return (IListOrRel) w.done();
-	}
-
-	@Override
-	public boolean isSubListOf(IList other) {
-		// NOTE: copied from fast list
-		int j = 0;
-		nextchar:
-			for(IValue elm : this){
-				while(j < other.length()){
-					if(elm.isEqual(other.get(j))){
-						j++;
-						continue nextchar;
-					} else
-						j++;
-				}
-				return false;
-			}
-		return true;
-	}
-
-	@Override
-	public <IListOrRel extends IList> IListOrRel replace(int first, int second,
-			int end, IList repl) throws FactTypeUseException,
-			IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
-		return null;
+	protected IValueFactory getValueFactory() {
+		return ValueFactory.getInstance();
 	}
 	
 }

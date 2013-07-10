@@ -11,23 +11,24 @@
  *******************************************************************************/
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.set$difference;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.set$intersection;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.set$isSubset;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.set$union;
+
 import java.util.Iterator;
 
-import org.eclipse.imp.pdb.facts.IRelation;
-import org.eclipse.imp.pdb.facts.IRelationWriter;
 import org.eclipse.imp.pdb.facts.ISet;
 import org.eclipse.imp.pdb.facts.IValue;
+import org.eclipse.imp.pdb.facts.IValueFactory;
+import org.eclipse.imp.pdb.facts.impl.AbstractSet;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
-import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
-import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
 import clojure.lang.IPersistentSet;
 import clojure.lang.PersistentHashSet;
 
-import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
-
-class Set extends Value implements ISet {
+class Set extends AbstractSet {
 
 	protected final static TypeFactory typeFactory = TypeFactory.getInstance();
 	protected final static Type voidType = typeFactory.voidType();	
@@ -36,18 +37,10 @@ class Set extends Value implements ISet {
 	protected final IPersistentSet xs;	
 
 	protected Set(Type et, IPersistentSet xs) {
-		super(TypeFactory.getInstance().setType(et));
 		this.et = et;
 		this.xs = xs;
 	}
-	
-	// for inheritence
-	protected Set(Type t, Type et, IPersistentSet xs) {
-		super(t);
-		this.et = et;
-		this.xs = xs;
-	}	
-		
+			
 	protected Set(Type et) {
 		this(et, PersistentHashSet.EMPTY);
 	}
@@ -89,15 +82,15 @@ class Set extends Value implements ISet {
 	}
 
 	@Override
-	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
-		return v.visitSet(this);
-	}
-
-	@Override
 	public Type getElementType() {
 		return getType().getElementType();
 	}
 
+	@Override
+	public Type getType() {
+		return inferSetOrRelType(getElementType(), this);
+	}
+	
 	@Override
 	public boolean isEmpty() {
 		return size() == 0;
@@ -114,47 +107,31 @@ class Set extends Value implements ISet {
 	}
 
 	@Override
-	public <ISetOrRel extends ISet> ISetOrRel insert(IValue x) {
-		return SetOrRel.apply(lub(x), (IPersistentSet) xs.cons(x));
+	public ISet insert(IValue x) {
+		return new Set(lub(x), (IPersistentSet) xs.cons(x));
 	}
 
 	@Override
-	public <ISetOrRel extends ISet> ISetOrRel union(ISet other) {
+	public ISet union(ISet other) {
 		Set that = (Set) other;
-		return SetOrRel.apply(this.lub(that), set$union(this.xs, that.xs));
+		return new Set(this.lub(that), set$union(this.xs, that.xs));
 	}
 	
 	@Override
-	public <ISetOrRel extends ISet> ISetOrRel intersect(ISet other) {
+	public ISet intersect(ISet other) {
 		Set that = (Set) other;
-		return SetOrRel.apply(this.lub(that), set$intersection(this.xs, that.xs));
+		return new Set(this.lub(that), set$intersection(this.xs, that.xs));
 	}
 
 	@Override
-	public <ISetOrRel extends ISet> ISetOrRel subtract(ISet other) {
+	public ISet subtract(ISet other) {
 		Set that = (Set) other;
-		return SetOrRel.apply(et, set$difference(this.xs, that.xs));
+		return new Set(et, set$difference(this.xs, that.xs));
 	}
 
 	@Override
-	public <ISetOrRel extends ISet> ISetOrRel delete(IValue x) {
-		return SetOrRel.apply(et, xs.disjoin(x));
-	}
-
-	@Override
-	public IRelation product(ISet other) {
-		Set that = (Set) other;
-		
-		Type resultType = TypeFactory.getInstance().tupleType(this.et, that.et);
-		IRelationWriter result = ValueFactory.getInstance().relationWriter(resultType);
-		
-		for (IValue x : this) {
-			for (IValue y : that) {
-				result.insert(new Tuple(x, y));
-			}
-		}
-
-		return result.done();
+	public ISet delete(IValue x) {
+		return new Set(et, xs.disjoin(x));
 	}
 
 	@Override
@@ -174,8 +151,18 @@ class Set extends Value implements ISet {
 	}
 
 	@Override
+	public boolean isEqual(IValue other) {
+		return this.equals(other);
+	}
+
+	@Override
 	public int hashCode() {
 		return xs.hashCode();
+	}
+
+	@Override
+	protected IValueFactory getValueFactory() {
+		return ValueFactory.getInstance();
 	}	
 	
 }

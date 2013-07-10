@@ -49,19 +49,9 @@ class SetWriter implements ISetWriter {
 	}
 
 	@Override
-	public void delete(IValue x) {
-		xs = xs.disjoin(x);
-	}
-
-	@Override
 	public ISet done() {
 		IPersistentSet result = (IPersistentSet) xs.persistent();
 		return SetOrRel.apply(et, result);
-	}
-
-	@Override
-	public int size() {
-		return xs.count();
 	}
 
 }

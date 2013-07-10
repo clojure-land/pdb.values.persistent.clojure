@@ -36,11 +36,6 @@ class ListWriter implements IListWriter {
 	}
 	
 	@Override
-	public int size() {
-		return xs.count();
-	}
-	
-	@Override
 	public void insertAll(Iterable<? extends IValue> collection)
 			throws FactTypeUseException {
 		insertSeq(RT.seq(collection));
@@ -95,16 +90,6 @@ class ListWriter implements IListWriter {
 	public void appendAll(Iterable<? extends IValue> collection)
 			throws FactTypeUseException {
 		xs = core$concat(xs, RT.seq(collection));
-	}
-
-	@Override
-	public void delete(IValue x) {
-		xs = List.deleteFromSeq(xs, x);
-	}
-
-	@Override
-	public void delete(int i) {
-		xs = List.deleteFromSeq(xs, i);
 	}
 
 	@Override

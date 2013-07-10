@@ -19,43 +19,44 @@ import java.util.Map.Entry;
 import org.eclipse.imp.pdb.facts.IMap;
 import org.eclipse.imp.pdb.facts.IMapWriter;
 import org.eclipse.imp.pdb.facts.IValue;
+import org.eclipse.imp.pdb.facts.IValueFactory;
+import org.eclipse.imp.pdb.facts.impl.AbstractMap;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
-import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 
 import clojure.lang.APersistentMap;
 import clojure.lang.IPersistentMap;
 import clojure.lang.ITransientMap;
 import clojure.lang.PersistentHashMap;
 
-public class Map extends Value implements IMap {
-
+public class Map extends AbstractMap {
+	
+	protected final Type candidateMapType;
 	protected final IPersistentMap xs;		
 	
 	protected Map(Type kt, Type vt, IPersistentMap xs) {
-		super(TypeFactory.getInstance().mapType(kt, vt));
+		// TODO: static candidate type might not match dynamic type
+		this.candidateMapType = TypeFactory.getInstance().mapType(kt, vt);
 		this.xs = xs;
 	}
 	
 	protected Map(Type kt, Type vt) {
+		// TODO: static candidate type might not match dynamic type
 		this(kt, vt, PersistentHashMap.EMPTY);
 	}
 	
-	protected Map(Type mapType) {
-		this(mapType, PersistentHashMap.EMPTY);
+	protected Map(Type candidateMapType) {
+		// TODO: static candidate type might not match dynamic type
+		this(candidateMapType, PersistentHashMap.EMPTY);
 	}	
 	
-	protected Map(Type mapType, IPersistentMap xs) {
-		super(mapType);
+	protected Map(Type candidateMapType, IPersistentMap xs) {
+		// TODO: static candidate type might not match dynamic type
+		this.candidateMapType = candidateMapType; 
 		this.xs = xs;
 	}	
 	
-	@Override
-	public <T> T accept(IValueVisitor<T> v) throws VisitorException {
-		return v.visitMap(this);
-	}
-
 	@Override
 	public boolean isEmpty() {
 		return size() == 0;
@@ -130,6 +131,11 @@ public class Map extends Value implements IMap {
 		return getType().getValueType();
 	}
 
+	@Override
+	public Type getType() {
+		return inferMapType(candidateMapType, isEmpty());
+	}
+	
 	@Override
 	public IMap join(IMap other) {
 		Map that = (Map) other;
@@ -280,8 +286,18 @@ public class Map extends Value implements IMap {
 	}
 
 	@Override
+	public boolean isEqual(IValue other) {
+		return this.equals(other);
+	}
+	
+	@Override
 	public int hashCode() {
 		return xs.hashCode();
-	}		
+	}
+
+	@Override
+	protected IValueFactory getValueFactory() {
+		return ValueFactory.getInstance();
+	}	
 
 }
