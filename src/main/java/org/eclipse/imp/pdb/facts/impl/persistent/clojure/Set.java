@@ -22,6 +22,7 @@ import org.eclipse.imp.pdb.facts.ISet;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.impl.AbstractSet;
+import org.eclipse.imp.pdb.facts.impl.func.SetFunctions;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
@@ -33,11 +34,11 @@ class Set extends AbstractSet {
 	protected final static TypeFactory typeFactory = TypeFactory.getInstance();
 	protected final static Type voidType = typeFactory.voidType();	
 	
-	protected final Type et;
+	protected final Type ct;
 	protected final IPersistentSet xs;	
 
 	protected Set(Type et, IPersistentSet xs) {
-		this.et = et;
+		this.ct = inferSetOrRelType(et, xs.count() == 0);
 		this.xs = xs;
 	}
 			
@@ -68,11 +69,11 @@ class Set extends AbstractSet {
 	}
 
 	protected Type lub(IValue x) {
-		return et.lub(x.getType());
+		return getElementType().lub(x.getType());
 	}
 
 	protected Type lub(ISet xs) {
-		return et.lub(xs.getElementType());
+		return getElementType().lub(xs.getElementType());
 	}		
 	
 	@SuppressWarnings("unchecked")
@@ -83,12 +84,12 @@ class Set extends AbstractSet {
 
 	@Override
 	public Type getElementType() {
-		return et;
+		return getType().getElementType();
 	}
 
 	@Override
 	public Type getType() {
-		return inferSetOrRelType(getElementType(), this);
+		return ct;
 	}
 	
 	@Override
@@ -126,12 +127,12 @@ class Set extends AbstractSet {
 	@Override
 	public ISet subtract(ISet other) {
 		Set that = (Set) other;
-		return new Set(et, set$difference(this.xs, that.xs));
+		return new Set(getElementType(), set$difference(this.xs, that.xs));
 	}
 
 	@Override
 	public ISet delete(IValue x) {
-		return new Set(et, xs.disjoin(x));
+		return new Set(getElementType(), xs.disjoin(x));
 	}
 
 	@Override
@@ -142,18 +143,28 @@ class Set extends AbstractSet {
 
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof Set) {
-			Set that = (Set) other;
-			return this.xs.equals(that.xs);
-		} else {
-			return false;
-		}
+		return SetFunctions.equals(getValueFactory(), this, other);
 	}
 
 	@Override
 	public boolean isEqual(IValue other) {
-		return this.equals(other);
+		return SetFunctions.isEqual(getValueFactory(), this, other);
 	}
+	
+//	@Override
+//	public boolean equals(Object other) {
+//		if (other instanceof Set) {
+//			Set that = (Set) other;
+//			return this.xs.equals(that.xs);
+//		} else {
+//			return false;
+//		}
+//	}
+//
+//	@Override
+//	public boolean isEqual(IValue other) {
+//		return this.equals(other);
+//	}
 
 	@Override
 	public int hashCode() {

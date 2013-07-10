@@ -18,6 +18,7 @@ import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.impl.AbstractList;
+import org.eclipse.imp.pdb.facts.impl.func.ListFunctions;
 import org.eclipse.imp.pdb.facts.type.Type;
 
 import clojure.lang.IPersistentVector;
@@ -26,28 +27,24 @@ import clojure.lang.PersistentVector;
 
 class Vector extends AbstractList {
 	
-	protected final Type et;
+	protected final Type ct;
 	protected final IPersistentVector xs;
-	
-	protected Vector(Type et) {
-		this(et, PersistentVector.EMPTY);
-	}
 	
 	protected Vector(IValue... values) {
 		this(TypeInferenceHelper.lubFromVoid(values), PersistentVector.create((Object[])values));
 	}
 
 	protected Vector(Type et, IPersistentVector xs) {
-		this.et = et;
+		this.ct = inferListOrRelType(et, xs.count() == 0);
 		this.xs = xs;
 	}
 	
 	private Type lub(IValue x) {
-		return et.lub(x.getType());
+		return getElementType().lub(x.getType());
 	}
 
 	private Type lub(IList xs) {
-		return et.lub(xs.getElementType());
+		return getElementType().lub(xs.getElementType());
 	}	
 	
 	@SuppressWarnings("unchecked")
@@ -58,12 +55,12 @@ class Vector extends AbstractList {
 
 	@Override
 	public Type getElementType() {
-		return et;
+		return getType().getElementType();
 	}
 	
 	@Override
 	public Type getType() {
-		return inferListOrRelType(getElementType(), this);
+		return ct;
 	}
 
 	@Override
@@ -73,7 +70,7 @@ class Vector extends AbstractList {
 
 	@Override
 	public IList reverse() {
-		return new Vector(et, PersistentVector.create(xs.rseq()));
+		return new Vector(getElementType(), PersistentVector.create(xs.rseq()));
 	}
 
 	@Override
@@ -134,7 +131,7 @@ class Vector extends AbstractList {
 	@Override
 	public IList sublist(int i, int n) {
 		if (i < 0 || n < 0 || i + n > length()) throw new IndexOutOfBoundsException();
-		return new Vector(et, clojure.lang.RT.subvec(xs, i, i+n));
+		return new Vector(getElementType(), clojure.lang.RT.subvec(xs, i, i+n));
 	}
 
 	@Override
@@ -155,7 +152,7 @@ class Vector extends AbstractList {
 			}
 		}
 				
-		return new Vector(et, (IPersistentVector) result.persistent());
+		return new Vector(getElementType(), (IPersistentVector) result.persistent());
 	}
 
 	@Override
@@ -186,23 +183,33 @@ class Vector extends AbstractList {
 			}
 		}
 		
-		return new Vector(et, (IPersistentVector) result);		
+		return new Vector(getElementType(), (IPersistentVector) result);		
 	}
 
 	@Override
-	public boolean equals(Object other) {
-		if (other instanceof Vector) {
-			Vector that = (Vector) other;
-			return this.xs.equals(that.xs);
-		} else {
-			return false;
-		}
+	public boolean equals(Object that) {
+		return ListFunctions.equals(getValueFactory(), this, that);
 	}
 
 	@Override
-	public boolean isEqual(IValue other) {
-		return this.equals(other);
+	public boolean isEqual(IValue that) {
+		return ListFunctions.isEqual(getValueFactory(), this, that);
 	}
+	
+//	@Override
+//	public boolean equals(Object other) {
+//		if (other instanceof Vector) {
+//			Vector that = (Vector) other;
+//			return this.xs.equals(that.xs);
+//		} else {
+//			return false;
+//		}
+//	}
+//
+//	@Override
+//	public boolean isEqual(IValue other) {
+//		return this.equals(other);
+//	}
 	
 	@Override
 	public int hashCode() {

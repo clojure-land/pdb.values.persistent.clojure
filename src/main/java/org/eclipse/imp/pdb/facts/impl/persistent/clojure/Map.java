@@ -21,6 +21,7 @@ import org.eclipse.imp.pdb.facts.IMapWriter;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.impl.AbstractMap;
+import org.eclipse.imp.pdb.facts.impl.func.MapFunctions;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
@@ -276,18 +277,28 @@ public class Map extends AbstractMap {
 	
 	@Override
 	public boolean equals(Object other) {
-		if (other instanceof Map) {
-			Map that = (Map) other;
-			return this.xs.equals(that.xs);
-		} else {
-			return false;
-		}
+		return MapFunctions.equals(getValueFactory(), this, other);
 	}
 
 	@Override
 	public boolean isEqual(IValue other) {
-		return this.equals(other);
+		return MapFunctions.isEqual(getValueFactory(), this, other);
 	}
+	
+//	@Override
+//	public boolean equals(Object other) {
+//		if (other instanceof Map) {
+//			Map that = (Map) other;
+//			return this.xs.equals(that.xs);
+//		} else {
+//			return false;
+//		}
+//	}
+//
+//	@Override
+//	public boolean isEqual(IValue other) {
+//		return this.equals(other);
+//	}
 	
 	@Override
 	public int hashCode() {
