@@ -11,7 +11,9 @@
  *******************************************************************************/
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
-import java.util.Iterator;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$concat;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$drop;
+import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.core$take;
 
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IListWriter;
@@ -25,8 +27,6 @@ import clojure.lang.ISeq;
 import clojure.lang.ITransientVector;
 import clojure.lang.PersistentVector;
 import clojure.lang.RT;
-
-import static org.eclipse.imp.pdb.facts.impl.persistent.clojure.ClojureHelper.*;
 
 class VectorWriter implements IListWriter {
 
@@ -47,7 +47,7 @@ class VectorWriter implements IListWriter {
 		for(Object item : values)
 			result = (ITransientVector) result.conj(item);
 
-		for(Object item : (Iterable) xs.persistent())
+		for(Object item : (Iterable<?>) xs.persistent())
 			result = (ITransientVector) result.conj(item);
 
 		xs = result;
@@ -60,7 +60,7 @@ class VectorWriter implements IListWriter {
 		for(Object item : values)
 			result = (ITransientVector) result.conj(item);
 
-		for(Object item : (Iterable) xs.persistent())
+		for(Object item : (Iterable<?>) xs.persistent())
 			result = (ITransientVector) result.conj(item);
 
 		xs = result;
@@ -112,52 +112,10 @@ class VectorWriter implements IListWriter {
 	}
 
 	@Override
-	// NOTE: because a TransientVector turned persistent for iteration
-	public void delete(IValue x) {
-		ITransientVector result = PersistentVector.EMPTY.asTransient();
-		
-		boolean skipped = false;
-		for(Object item : (Iterable) xs.persistent()) {
-			if (!skipped && item.equals(x)) {
-				skipped = true;
-			} else {
-				result = (ITransientVector) result.conj(item);
-			}
-		}
-		
-		xs = result;
-	}
-
-	@Override
-	// NOTE: because a TransientVector turned persistent for iteration
-	public void delete(int i) {
-		ITransientVector result = PersistentVector.EMPTY.asTransient();
-		
-		boolean skipped = false;
-		int idx = 0;
-		for (Iterator it = ((Iterable) xs.persistent()).iterator(); it.hasNext(); idx++) {
-			Object item = it.next();
-			
-			if (!skipped && i == idx) {
-				skipped = true;
-			} else {
-				result = (ITransientVector) result.conj(item);
-			}
-		}
-		
-		xs = result;
-	}
-
-	@Override
 	public IList done() {
-		return VectorOrRel.apply(et, (IPersistentVector) xs.persistent());
+		return new Vector(et, (IPersistentVector) xs.persistent());
 	}
-
-	@Override
-	public int size() {
-		return xs.count();
-	}
-
+	
 }
 
 class VectorWriterWithTypeInference extends VectorWriter {
@@ -171,7 +129,7 @@ class VectorWriterWithTypeInference extends VectorWriter {
 	public IList done() {
 		IPersistentVector resultVector = (IPersistentVector) xs.persistent();
 		Type resultType = List.lub(resultVector.seq());
-		return VectorOrRel.apply(resultType, resultVector);
+		return new Vector(resultType, resultVector);
 	}
 	  
 }

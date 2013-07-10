@@ -83,7 +83,7 @@ class Set extends AbstractSet {
 
 	@Override
 	public Type getElementType() {
-		return getType().getElementType();
+		return et;
 	}
 
 	@Override

@@ -192,13 +192,8 @@ import clojure.lang.PersistentVector;
 				ret = ret.conj(item);
 			
 			IPersistentVector persistentData = (IPersistentVector) ret.persistent();
-			
-			if (/*inferred && */elementType.isTuple() || data.isEmpty()) {
-				constructedList = new VectorRelation(data.isEmpty() ? TypeFactory.getInstance().voidType() : elementType, persistentData);
-			}
-			else {
-				constructedList = new Vector(data.isEmpty() ? TypeFactory.getInstance().voidType() : elementType, persistentData);
-			}
+
+			constructedList = new Vector(elementType, persistentData);
 		}
 		
 		return constructedList;

@@ -94,7 +94,7 @@ class ListWriter implements IListWriter {
 
 	@Override
 	public IList done() {
-		return ListOrRel.apply(et, xs);
+		return new List(et, xs);
 	}
 
 }
@@ -107,7 +107,7 @@ class ListWriterWithTypeInference extends ListWriter {
 
 	@Override
 	public IList done() {
-		return ListOrRel.apply(List.lub(xs), xs);
+		return new List(List.lub(xs), xs);
 	}
 	  
 }

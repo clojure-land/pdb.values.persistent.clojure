@@ -51,7 +51,7 @@ class SetWriter implements ISetWriter {
 	@Override
 	public ISet done() {
 		IPersistentSet result = (IPersistentSet) xs.persistent();
-		return SetOrRel.apply(et, result);
+		return new Set(et, result);
 	}
 
 }
@@ -65,7 +65,7 @@ class SetWriterWithTypeInference extends SetWriter {
 	@Override
 	public ISet done() {
 		IPersistentSet result = (IPersistentSet) xs.persistent();
-		return SetOrRel.apply(List.lub(result.seq()), result);
+		return new Set(List.lub(result.seq()), result);
 	}
 	  
 }

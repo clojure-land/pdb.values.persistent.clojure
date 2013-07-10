@@ -123,7 +123,7 @@ import clojure.lang.PersistentHashSet;
 		IPersistentSet persistentData = (IPersistentSet) ret.persistent();
 		
 		if (constructedSet == null) {
-			constructedSet = SetOrRel.apply(elementType, persistentData);
+			constructedSet = new Set(elementType, persistentData);
 		}
 		
 		return constructedSet;
