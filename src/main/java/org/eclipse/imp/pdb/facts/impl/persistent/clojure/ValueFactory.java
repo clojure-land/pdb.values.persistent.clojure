@@ -11,29 +11,18 @@
  *******************************************************************************/
 package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 
-import java.util.Map;
-
-import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IList;
-import org.eclipse.imp.pdb.facts.IListRelation;
-import org.eclipse.imp.pdb.facts.IListRelationWriter;
 import org.eclipse.imp.pdb.facts.IListWriter;
 import org.eclipse.imp.pdb.facts.IMap;
 import org.eclipse.imp.pdb.facts.IMapWriter;
-import org.eclipse.imp.pdb.facts.INode;
-import org.eclipse.imp.pdb.facts.IRelation;
-import org.eclipse.imp.pdb.facts.IRelationWriter;
 import org.eclipse.imp.pdb.facts.ISet;
 import org.eclipse.imp.pdb.facts.ISetWriter;
 import org.eclipse.imp.pdb.facts.ITuple;
 import org.eclipse.imp.pdb.facts.IValue;
-import org.eclipse.imp.pdb.facts.IValueFactory;
-import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
-import org.eclipse.imp.pdb.facts.impl.fast.FastBaseValueFactory;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-public class ValueFactory extends FastBaseValueFactory implements IValueFactory {
+public class ValueFactory extends org.eclipse.imp.pdb.facts.impl.fast.ValueFactory {
 
 	/*package*/ ValueFactory() {
 		super();
@@ -48,24 +37,6 @@ public class ValueFactory extends FastBaseValueFactory implements IValueFactory 
 	}	
 	
 	@Override
-	public IConstructor constructor(Type constructorType) {
-		return new Constructor(constructorType);
-	}
-
-	@Override
-	public IConstructor constructor(Type constructorType, IValue... children)
-			throws FactTypeUseException {
-		return new Constructor(constructorType, children);
-	}
-	
-	@Override
-	public IConstructor constructor(Type constructorType,
-			Map<String, IValue> annotations, IValue... children)
-			throws FactTypeUseException {
-		return new Constructor(constructorType, annotations, children);	
-	}
-
-	@Override
 	public IList list(IValue... values) {
 		IListWriter writer = listWriter();
 		writer.insert(values);
@@ -78,25 +49,25 @@ public class ValueFactory extends FastBaseValueFactory implements IValueFactory 
 	}
 		
 	@Override
-	public IListRelation listRelation(IValue... values) {
-		return (IListRelation) list(values);
+	public IList listRelation(IValue... values) {
+		return list(values);
 	}
 
 	@Override
-	public IListRelation listRelation(Type tupleType) {
+	public IList listRelation(Type tupleType) {
 		return listRelationWriter(tupleType).done();
 	}
 
 	@Override
-	public IListRelationWriter listRelationWriter() {
-//		return new ListRelationWriterWithTypeInference();
-		return new VectorRelationWriterWithTypeInference();
+	public IListWriter listRelationWriter() {
+//		return new ListWriterWithTypeInference();
+		return new VectorWriterWithTypeInference();
 	}
 
 	@Override
-	public IListRelationWriter listRelationWriter(Type et) {
-//		return new ListRelationWriter(et);
-		return new VectorRelationWriter(et);	
+	public IListWriter listRelationWriter(Type et) {
+//		return new ListWriter(et);
+		return new VectorWriter(et);	
 	}
 
 	@Override
@@ -139,58 +110,34 @@ public class ValueFactory extends FastBaseValueFactory implements IValueFactory 
 	}
 
 	@Override
-	public INode node(String name) {
-		return new Node(name);
+	public ISet relation(IValue... values) {
+		return set(values);
 	}
 
 	@Override
-	public INode node(String name, IValue... children) {
-		return new Node(name, children);
-	}
-
-	@Override
-	public INode node(String name, Map<String, IValue> annotations,
-			IValue... children) throws FactTypeUseException {
-		return new Node(name, annotations, children);
-	}
-
-	@Override
-	public INode node(String name, IValue[] children,
-			Map<String, IValue> keyArgValues) throws FactTypeUseException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IRelation relation(IValue... values) {
-		return new Relation(values);
-	}
-
-	@Override
-	public IRelation relation(Type et) {
+	public ISet relation(Type et) {
 //		return new Relation(et);
 		return relationWriter(TypeFactory.getInstance().voidType()).done();
 	}
 
 	@Override
-	public IRelationWriter relationWriter() {
-		return new RelationWriterWithTypeInference();
+	public ISetWriter relationWriter() {
+		return setWriter();
 	}
 
 	@Override
-	public IRelationWriter relationWriter(Type et) {
-		return new RelationWriter(et);
+	public ISetWriter relationWriter(Type et) {
+		return setWriter(et);
 	}
 
 	@Override
 	public ISet set(IValue... values) {
-		Type et = TypeInferenceHelper.lub(values, TypeFactory.getInstance().voidType());
-		return et.isTupleType() ? new Relation(values) : new Set(values);
+		return new Set(values);
 	}
 
 	@Override
 	public ISet set(Type et) {
-		return setWriter(TypeFactory.getInstance().voidType()).done();
+		return set();
 	}
 
 	@Override
