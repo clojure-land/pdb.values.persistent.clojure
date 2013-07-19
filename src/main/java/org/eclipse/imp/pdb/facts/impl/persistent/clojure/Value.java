@@ -14,7 +14,9 @@ package org.eclipse.imp.pdb.facts.impl.persistent.clojure;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import org.eclipse.imp.pdb.facts.IAnnotatable;
 import org.eclipse.imp.pdb.facts.IValue;
+import org.eclipse.imp.pdb.facts.exceptions.IllegalOperationException;
 import org.eclipse.imp.pdb.facts.io.StandardTextWriter;
 import org.eclipse.imp.pdb.facts.type.Type;
 
@@ -36,6 +38,17 @@ abstract class Value implements IValue {
 		return this.equals(that);
 	}
 
+	@Override
+	public boolean isAnnotatable() {
+		return false;
+	}
+
+	@Override
+	public IAnnotatable<? extends IValue> asAnnotatable() {
+		throw new IllegalOperationException(
+				"Cannot be viewed as annotatable.", getType());
+	}	
+	
     @Override
     public final String toString() {
     	try {
