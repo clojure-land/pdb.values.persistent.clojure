@@ -19,9 +19,13 @@ import org.eclipse.imp.pdb.facts.impl.util.collections.ShareableValuesList;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.IPersistentVector;
-import clojure.lang.ITransientCollection;
-import clojure.lang.PersistentVector;
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.ITransientCollection;
+import com.github.krukow.clj_lang.PersistentVector;
+
+//import clojure.lang.IPersistentVector;
+//import clojure.lang.ITransientCollection;
+//import clojure.lang.PersistentVector;
 
 // TODO Add checking.
 /**

@@ -18,9 +18,13 @@ import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.IPersistentSet;
-import clojure.lang.ITransientSet;
-import clojure.lang.PersistentHashSet;
+import com.github.krukow.clj_lang.IPersistentSet;
+import com.github.krukow.clj_lang.ITransientSet;
+import com.github.krukow.clj_lang.PersistentHashSet;
+
+//import clojure.lang.IPersistentSet;
+//import clojure.lang.ITransientSet;
+//import clojure.lang.PersistentHashSet;
 
 class SetWriter implements ISetWriter {
 

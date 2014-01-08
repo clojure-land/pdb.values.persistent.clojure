@@ -33,11 +33,17 @@ import org.eclipse.imp.pdb.facts.impl.AbstractList;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.IPersistentCollection;
-import clojure.lang.IPersistentVector;
-import clojure.lang.ISeq;
-import clojure.lang.PersistentHashSet;
-import clojure.lang.PersistentList;
+import com.github.krukow.clj_lang.IPersistentCollection;
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.ISeq;
+import com.github.krukow.clj_lang.PersistentHashSet;
+import com.github.krukow.clj_lang.PersistentList;
+
+//import clojure.lang.IPersistentCollection;
+//import clojure.lang.IPersistentVector;
+//import clojure.lang.ISeq;
+//import clojure.lang.PersistentHashSet;
+//import clojure.lang.PersistentList;
 
 class List extends AbstractList {
 

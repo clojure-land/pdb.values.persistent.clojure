@@ -22,11 +22,17 @@ import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.IPersistentVector;
-import clojure.lang.ISeq;
-import clojure.lang.ITransientVector;
-import clojure.lang.PersistentVector;
-import clojure.lang.RT;
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.ISeq;
+import com.github.krukow.clj_lang.ITransientVector;
+import com.github.krukow.clj_lang.PersistentVector;
+import com.github.krukow.clj_lang.RT;
+
+//import clojure.lang.IPersistentVector;
+//import clojure.lang.ISeq;
+//import clojure.lang.ITransientVector;
+//import clojure.lang.PersistentVector;
+//import clojure.lang.RT;
 
 class VectorWriter implements IListWriter {
 

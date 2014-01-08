@@ -20,9 +20,13 @@ import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.visitors.IValueVisitor;
 
-import clojure.lang.IPersistentVector;
-import clojure.lang.ITransientVector;
-import clojure.lang.PersistentVector;
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.ITransientVector;
+import com.github.krukow.clj_lang.PersistentVector;
+
+//import clojure.lang.IPersistentVector;
+//import clojure.lang.ITransientVector;
+//import clojure.lang.PersistentVector;
 
 public class Tuple extends Value implements ITuple {
 

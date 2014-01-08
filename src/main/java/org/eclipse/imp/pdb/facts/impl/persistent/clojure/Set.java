@@ -26,8 +26,11 @@ import org.eclipse.imp.pdb.facts.impl.func.SetFunctions;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.IPersistentSet;
-import clojure.lang.PersistentHashSet;
+import com.github.krukow.clj_lang.IPersistentSet;
+import com.github.krukow.clj_lang.PersistentHashSet;
+
+//import clojure.lang.IPersistentSet;
+//import clojure.lang.PersistentHashSet;
 
 class Set extends AbstractSet {
 

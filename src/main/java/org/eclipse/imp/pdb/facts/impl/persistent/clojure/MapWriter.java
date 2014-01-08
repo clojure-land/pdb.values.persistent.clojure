@@ -19,9 +19,13 @@ import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.IPersistentMap;
-import clojure.lang.ITransientMap;
-import clojure.lang.PersistentHashMap;
+import com.github.krukow.clj_lang.IPersistentMap;
+import com.github.krukow.clj_lang.ITransientMap;
+import com.github.krukow.clj_lang.PersistentHashMap;
+
+//import clojure.lang.IPersistentMap;
+//import clojure.lang.ITransientMap;
+//import clojure.lang.PersistentHashMap;
 
 class MapWriter implements IMapWriter {
 
@@ -78,7 +82,7 @@ class MapWriter implements IMapWriter {
 
 	@Override
 	public IMap done() {
-		IPersistentMap resultMap = xs.persistent();
+		IPersistentMap resultMap = (IPersistentMap) xs.persistent();
 		
 		if (resultMap.count() == 0) {
 			/*
@@ -103,7 +107,7 @@ class MapWriterWithTypeInference extends MapWriter {
 	
 	@Override
 	public IMap done() {
-		IPersistentMap resultMap = xs.persistent();
+		IPersistentMap resultMap = (IPersistentMap) xs.persistent();
 		Type resultKt = List.lub(ClojureHelper.core$keys(resultMap));
 		Type resultVt = List.lub(ClojureHelper.core$vals(resultMap));
 		

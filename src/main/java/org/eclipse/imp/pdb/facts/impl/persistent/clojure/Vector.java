@@ -21,9 +21,14 @@ import org.eclipse.imp.pdb.facts.impl.AbstractList;
 import org.eclipse.imp.pdb.facts.impl.func.ListFunctions;
 import org.eclipse.imp.pdb.facts.type.Type;
 
-import clojure.lang.IPersistentVector;
-import clojure.lang.ITransientVector;
-import clojure.lang.PersistentVector;
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.ITransientVector;
+import com.github.krukow.clj_lang.PersistentVector;
+import com.github.krukow.clj_lang.RT;
+
+//import clojure.lang.IPersistentVector;
+//import clojure.lang.ITransientVector;
+//import clojure.lang.PersistentVector;
 
 class Vector extends AbstractList {
 	
@@ -131,7 +136,7 @@ class Vector extends AbstractList {
 	@Override
 	public IList sublist(int i, int n) {
 		if (i < 0 || n < 0 || i + n > length()) throw new IndexOutOfBoundsException();
-		return new Vector(getElementType(), clojure.lang.RT.subvec(xs, i, i+n));
+		return new Vector(getElementType(), RT.subvec(xs, i, i+n));
 	}
 
 	@Override
@@ -163,12 +168,12 @@ class Vector extends AbstractList {
 		
 		if (xs.count() != 1) {
 			if (i == 0) {
-				result = clojure.lang.RT.subvec(xs, 1, xs.count());
+				result = RT.subvec(xs, 1, xs.count());
 			} else if (i == xs.count() - 1) {
-				result = clojure.lang.RT.subvec(xs, 0, xs.count() - 1);
+				result = RT.subvec(xs, 0, xs.count() - 1);
 			} else {
-				IPersistentVector l = clojure.lang.RT.subvec(xs, 0, i);
-				IPersistentVector r = clojure.lang.RT.subvec(xs, i+1, xs.count());				
+				IPersistentVector l = RT.subvec(xs, 0, i);
+				IPersistentVector r = RT.subvec(xs, i+1, xs.count());				
 
 				// perform eager copy
 				ITransientVector transientResult = PersistentVector.EMPTY.asTransient();

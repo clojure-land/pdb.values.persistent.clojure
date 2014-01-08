@@ -25,10 +25,16 @@ import org.eclipse.imp.pdb.facts.impl.func.MapFunctions;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.APersistentMap;
-import clojure.lang.IPersistentMap;
-import clojure.lang.ITransientMap;
-import clojure.lang.PersistentHashMap;
+import com.github.krukow.clj_lang.APersistentMap;
+import com.github.krukow.clj_lang.APersistentSet;
+import com.github.krukow.clj_lang.IPersistentMap;
+import com.github.krukow.clj_lang.ITransientMap;
+import com.github.krukow.clj_lang.PersistentHashMap;
+
+//import clojure.lang.APersistentMap;
+//import clojure.lang.IPersistentMap;
+//import clojure.lang.ITransientMap;
+//import clojure.lang.PersistentHashMap;
 
 public class Map extends AbstractMap {
 	
@@ -102,7 +108,8 @@ public class Map extends AbstractMap {
 
 	@Override
 	public boolean containsValue(IValue value) {
-		return ((APersistentMap) xs).containsValue(value);
+		throw new UnsupportedOperationException();
+//		return ((APersistentSet) xs).containsValue(value);
 
 //		Iterator<IValue> it = valueIterator();
 //		
@@ -150,7 +157,7 @@ public class Map extends AbstractMap {
 			transientResult = transientResult.without(key);
 		}
 
-		return new Map(getType(), transientResult.persistent());
+		return new Map(getType(), (IPersistentMap) transientResult.persistent());
 	}
 
 	@Override

@@ -20,9 +20,13 @@ import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.ISeq;
-import clojure.lang.PersistentList;
-import clojure.lang.RT;
+import com.github.krukow.clj_lang.ISeq;
+import com.github.krukow.clj_lang.PersistentList;
+import com.github.krukow.clj_lang.RT;
+
+//import clojure.lang.ISeq;
+//import clojure.lang.PersistentList;
+//import clojure.lang.RT;
 
 class ListWriter implements IListWriter {
 
