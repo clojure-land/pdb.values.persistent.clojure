@@ -37,13 +37,13 @@
 		<dependency>
 			<groupId>org.clojure</groupId>
 			<artifactId>clojure</artifactId>
-			<version>1.5.1</version>
+			<version>1.6.0</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.github.krukow</groupId> -->
-<!-- 			<artifactId>clj-ds</artifactId> -->
-<!-- 			<version>0.0.4</version> -->
-<!-- 		</dependency> -->
+		<dependency>
+			<groupId>com.github.krukow</groupId>
+			<artifactId>clj-ds</artifactId>
+			<version>0.0.4</version>
+		</dependency>
         <dependency>
             <groupId>org.eclipse.imp</groupId>
             <artifactId>org.eclipse.imp.pdb.values.test</artifactId>

@@ -26,55 +26,26 @@ import org.eclipse.imp.pdb.facts.impl.func.SetFunctions;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
-import clojure.lang.IPersistentSet;
-import clojure.lang.PersistentHashSet;
+import com.github.krukow.clj_lang.PersistentHashSet;
+import com.github.krukow.clj_lang.IPersistentSet;
 
-class Set extends AbstractSet {
+//import clojure.lang.IPersistentSet;
+//import clojure.lang.PersistentHashSet;
+
+class TypelessCljDsSet extends AbstractSet {
 
 	protected final static TypeFactory typeFactory = TypeFactory.getInstance();
 	protected final static Type voidType = typeFactory.voidType();	
 	
-	protected final Type ct;
 	protected final IPersistentSet xs;	
 
-	protected Set(Type et, IPersistentSet xs) {
-		this.ct = inferSetOrRelType(et, xs.count() == 0);
+	protected TypelessCljDsSet(IPersistentSet xs) {
 		this.xs = xs;
 	}
 			
-	protected Set(Type et) {
-		this(et, PersistentHashSet.EMPTY);
+	protected TypelessCljDsSet(IValue... values) {
+		this(PersistentHashSet.create((Object[])values));
 	}
-
-	protected Set(Type et, IValue... values) {
-		this(et, PersistentHashSet.create((Object[])values));
-	}	
-	
-	protected Set(IValue... values) {
-		this(lub(values), PersistentHashSet.create((Object[])values));
-	}
-	
-	protected static Type lub(IValue... xs) {
-		return lub(xs, TypeFactory.getInstance().voidType());
-	}
-
-	protected static Type lub(IValue[] xs, Type base) {
-		Type result = base;
-
-		for (IValue x : xs) {
-			result = result.lub(x.getType());			
-		}
-		
-		return result;
-	}
-
-	protected Type lub(IValue x) {
-		return getElementType().lub(x.getType());
-	}
-
-	protected Type lub(ISet xs) {
-		return getElementType().lub(xs.getElementType());
-	}		
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -89,7 +60,7 @@ class Set extends AbstractSet {
 
 	@Override
 	public Type getType() {
-		return ct;
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
@@ -109,43 +80,59 @@ class Set extends AbstractSet {
 
 	@Override
 	public ISet insert(IValue x) {
-		return new Set(lub(x), (IPersistentSet) xs.cons(x));
+		return new TypelessCljDsSet((IPersistentSet) xs.cons(x));
 	}
 
-	@Override
-	public ISet union(ISet other) {
-		Set that = (Set) other;
-		return new Set(this.lub(that), set$union(this.xs, that.xs));
-	}
-	
-	@Override
-	public ISet intersect(ISet other) {
-		Set that = (Set) other;
-		return new Set(this.lub(that), set$intersection(this.xs, that.xs));
-	}
-
-	@Override
-	public ISet subtract(ISet other) {
-		Set that = (Set) other;
-		return new Set(getElementType(), set$difference(this.xs, that.xs));
-	}
+//	@Override
+//	public ISet union(ISet other) {
+//		TypelessCljDsSet that = (TypelessCljDsSet) other;
+//		return new TypelessCljDsSet(this.lub(that), set$union(this.xs, that.xs));
+//	}
+//	
+//	@Override
+//	public ISet intersect(ISet other) {
+//		TypelessCljDsSet that = (TypelessCljDsSet) other;
+//		return new TypelessCljDsSet(this.lub(that), set$intersection(this.xs, that.xs));
+//	}
+//
+//	@Override
+//	public ISet subtract(ISet other) {
+//		TypelessCljDsSet that = (TypelessCljDsSet) other;
+//		return new TypelessCljDsSet(getElementType(), set$difference(this.xs, that.xs));
+//	}
 
 	@Override
 	public ISet delete(IValue x) {
-		// TODO: lub is broken (does not shrink)
-		return new Set(getElementType(), xs.disjoin(x));
+		return new TypelessCljDsSet(xs.disjoin(x));
 	}
 
-	@Override
-	public boolean isSubsetOf(ISet other) {
-		Set that = (Set) other;
-		return set$isSubset(this.xs, that.xs); 
-	}
-
+//	@Override
+//	public boolean isSubsetOf(ISet other) {
+//		TypelessCljDsSet that = (TypelessCljDsSet) other;
+//		return set$isSubset(this.xs, that.xs); 
+//	}
+//
+	
 	@Override
 	public boolean equals(Object other) {
-		return SetFunctions.equals(getValueFactory(), this, other);
+		if (other == this)
+			return true;
+		if (other == null)
+			return false;
+		
+		if (other instanceof TypelessCljDsSet) {
+			TypelessCljDsSet that = (TypelessCljDsSet) other;
+
+			return xs.equals(that.xs);
+		}
+		
+		return false;
 	}
+		
+//	@Override
+//	public boolean equals(Object other) {
+//		return SetFunctions.equals(getValueFactory(), this, other);
+//	}
 
 	@Override
 	public boolean isEqual(IValue other) {

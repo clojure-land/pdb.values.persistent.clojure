@@ -15,6 +15,7 @@ import java.util.Iterator;
 
 import org.eclipse.imp.pdb.facts.ITuple;
 import org.eclipse.imp.pdb.facts.IValue;
+import org.eclipse.imp.pdb.facts.IWithKeywordParameters;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
@@ -125,6 +126,18 @@ public class Tuple extends Value implements ITuple {
 	@Override
 	public int hashCode() {
 		return xs.hashCode();
+	}
+
+	@Override
+	public boolean mayHaveKeywordParameters() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public IWithKeywordParameters<? extends IValue> asWithKeywordParameters() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
