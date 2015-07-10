@@ -91,9 +91,11 @@ class VectorWriter implements IListWriter {
 
 	// TODO / NOTE: inconsistency in naming; equivalent to List.put(i, x)
 	@Override
-	public void replaceAt(int i, IValue x) throws FactTypeUseException,
+	public IValue replaceAt(int i, IValue x) throws FactTypeUseException,
 			IndexOutOfBoundsException {
+		IValue prev = (IValue) xs.nth(i);
 		xs = xs.assocN(i, x);
+		return prev;
 	}
 
 	@Override
@@ -114,6 +116,16 @@ class VectorWriter implements IListWriter {
 	@Override
 	public IList done() {
 		return new Vector(et, (IPersistentVector) xs.persistent());
+	}
+
+	@Override
+	public IValue get(int i) throws IndexOutOfBoundsException {
+		return (IValue) xs.nth(i);
+	}
+
+	@Override
+	public int length() {
+		return xs.count();
 	}
 	
 }

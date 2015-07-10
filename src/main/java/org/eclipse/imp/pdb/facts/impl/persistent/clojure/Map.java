@@ -68,6 +68,11 @@ public class Map extends AbstractMap {
 	}
 
 	@Override
+	public IMap removeKey(IValue key) {
+		throw new UnsupportedOperationException();
+	}		
+	
+	@Override
 	public IMap put(IValue key, IValue value) {
 		
 		Type newMapType = getType();

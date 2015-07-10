@@ -60,28 +60,28 @@ public class ValueFactory extends org.eclipse.imp.pdb.facts.impl.fast.ValueFacto
 
 	@Override
 	public IListWriter listRelationWriter() {
-//		return new ListWriterWithTypeInference();
-		return new FastListWriter();
+		return new ListWriterWithTypeInference();
+//		return new FastListWriter();
 	}
 
 	@Override
 	public IListWriter listRelationWriter(Type et) {
-//		return new ListWriter(et);
-		return new FastListWriter(et);	
+		return new ListWriter(et);
+//		return new FastListWriter(et);	
 	}
 
 	@Override
 	public IListWriter listWriter() {
-//		return new ListWriterWithTypeInference();
+		return new ListWriterWithTypeInference();
 //		return new VectorWriterWithTypeInference();
-		return new FastListWriter();
+//		return new FastListWriter();
 	}
 
 	@Override
 	public IListWriter listWriter(Type et) {
-//		return new ListWriter(et);
+		return new ListWriter(et);
 //		return new VectorWriter(et);
-		return new FastListWriter(et);		
+//		return new FastListWriter(et);		
 	}
 
 	@Override

@@ -76,9 +76,11 @@ class ListWriter implements IListWriter {
 
 	// TODO / NOTE: inconsistency in naming; equivalent to List.put(i, x)
 	@Override
-	public void replaceAt(int i, IValue x) throws FactTypeUseException,
-			IndexOutOfBoundsException {
+	public IValue replaceAt(int i, IValue x) throws FactTypeUseException,
+			IndexOutOfBoundsException {		
+		IValue prev = get(i);
 		xs = List.replaceInSeq(xs, i, x);
+		return prev;
 	}
 
 	@Override
@@ -95,6 +97,19 @@ class ListWriter implements IListWriter {
 	@Override
 	public IList done() {
 		return new List(et, xs);
+	}
+
+	@Override
+	public IValue get(int i) throws IndexOutOfBoundsException {
+		if (i < 0 || i >= length()) throw new IndexOutOfBoundsException();
+		ISeq rest = xs;
+		for (; i > 0; rest = rest.next(), i--);		
+		return (IValue) rest.first();
+	}
+
+	@Override
+	public int length() {		
+		return xs.count();
 	}
 
 }
