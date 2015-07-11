@@ -134,14 +134,16 @@ public class TypelessValueFactory extends org.eclipse.imp.pdb.facts.impl.fast.Va
 
 	@Override
 	public ISetWriter setWriter() {
-		return new SetWriterWithTypeInference();
+//		return new SetWriterWithTypeInference();
 //		return new FastSetWriter();
+		return new TypelessSetWriter();
 	}
 
 	@Override
 	public ISetWriter setWriter(Type et) {
-		return new SetWriter(et);
+//		return new SetWriter(et);
 //		return new FastSetWriter(et);
+		return new TypelessSetWriter();
 	}
 
 	@Override
