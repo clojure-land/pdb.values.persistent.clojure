@@ -23,6 +23,7 @@ import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.impl.AbstractSet;
 import org.eclipse.imp.pdb.facts.impl.func.SetFunctions;
+import org.eclipse.imp.pdb.facts.impl.persistent.TypelessPDBPersistentHashSet;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 
@@ -135,9 +136,23 @@ class TypelessSet extends AbstractSet {
 
 	@Override
 	public boolean equals(Object other) {
-		return SetFunctions.equals(getValueFactory(), this, other);
-	}
+		if (other == this)
+			return true;
+		if (other == null)
+			return false;
+		
+		if (other instanceof TypelessSet) {
+			TypelessSet that = (TypelessSet) other;
+			
+			if (this.size() != that.size())
+				return false;
 
+			return xs.equals(that.xs);
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public boolean isEqual(IValue other) {
 		return SetFunctions.isEqual(getValueFactory(), this, other);
